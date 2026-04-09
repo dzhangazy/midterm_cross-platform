@@ -1,7 +1,7 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AppCache {
-  static const klogin = 'yummy_login';
+  static const klogin = 'finance_trip_login';
 
   Future<void> invalidate() async {
     final prefs = await SharedPreferences.getInstance();

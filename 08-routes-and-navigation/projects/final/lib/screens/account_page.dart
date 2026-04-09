@@ -42,12 +42,19 @@ class AccountPageState extends State<AccountPage> {
     return ListView(
       children: [
         ListTile(
-          title: const Text('View Kodeco'),
+          leading: const Icon(Icons.help_outline),
+          title: const Text('Travel Support'),
           onTap: () async {
-            await launchUrl(Uri.parse('https://www.kodeco.com/'));
+            await launchUrl(Uri.parse('https://jangazy-portfolio.netlify.app/'));
           },
         ),
         ListTile(
+          leading: const Icon(Icons.settings_outlined),
+          title: const Text('Finance Settings'),
+          onTap: () {},
+        ),
+        ListTile(
+          leading: const Icon(Icons.logout),
           title: const Text('Log out'),
           onTap: () {
             widget.onLogOut(true);
@@ -60,9 +67,9 @@ class AccountPageState extends State<AccountPage> {
   Widget buildProfile() {
     return Column(
       children: [
-        CircleAvatar(
-          radius: 60.0, // Adjust the radius to change the size of the avatar
-          backgroundImage: AssetImage(widget.user.profileImageUrl),
+        const CircleAvatar(
+          radius: 60.0,
+          child: Icon(Icons.person, size: 60),
         ),
         const SizedBox(height: 16.0),
         Text(
@@ -72,8 +79,8 @@ class AccountPageState extends State<AccountPage> {
           ),
         ),
         Text(widget.user.role),
-        Text(
-          '${widget.user.points} points',
+        const Text(
+          '1,200 Miles Earned',
         ),
       ],
     );

@@ -37,7 +37,7 @@ class _CartControlState extends State<CartControl> {
           }
         });
       },
-      tooltip: 'Decrease Cart Count',
+      tooltip: 'Decrease count',
     );
   }
 
@@ -57,7 +57,7 @@ class _CartControlState extends State<CartControl> {
           _cartNumber++;
         });
       },
-      tooltip: 'Increase Cart Count',
+      tooltip: 'Increase count',
     );
   }
 
@@ -66,7 +66,7 @@ class _CartControlState extends State<CartControl> {
       onPressed: () {
         widget.addToCart(_cartNumber);
       },
-      child: const Text('Add to Cart'),
+      child: const Text('Add to Plan'),
     );
   }
 

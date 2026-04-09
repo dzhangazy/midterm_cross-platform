@@ -8,7 +8,6 @@ class ItemDetails extends StatefulWidget {
   final CartManager cartManager;
   final void Function() quantityUpdated;
 
-  // 1
   const ItemDetails(
       {Key? key,
       required this.item,
@@ -23,20 +22,15 @@ class ItemDetails extends StatefulWidget {
 class _ItemDetailsState extends State<ItemDetails> {
   @override
   Widget build(BuildContext context) {
-    // 2
     final textTheme = Theme.of(context)
         .textTheme
         .apply(displayColor: Theme.of(context).colorScheme.onSurface);
-    // 3
     final colorTheme = Theme.of(context).colorScheme;
 
-    // 4
     return Padding(
       padding: const EdgeInsets.all(16.0),
-      // 5
       child: Wrap(
         children: [
-          // 6
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -44,13 +38,13 @@ class _ItemDetailsState extends State<ItemDetails> {
               const SizedBox(
                 height: 16.0,
               ),
-              _mostLikedBadge(colorTheme),
+              _topRatedBadge(colorTheme),
               const SizedBox(height: 16.0),
               Text(widget.item.description),
               const SizedBox(height: 16.0),
               _itemImage(widget.item.imageUrl),
               const SizedBox(height: 16.0),
-              _addToCartControl(widget.item),
+              _addToPlanControl(widget.item),
             ],
           ),
         ],
@@ -58,13 +52,13 @@ class _ItemDetailsState extends State<ItemDetails> {
     );
   }
 
-  Widget _mostLikedBadge(ColorScheme colorTheme) {
+  Widget _topRatedBadge(ColorScheme colorTheme) {
     return Align(
       alignment: Alignment.centerLeft,
       child: Container(
           padding: const EdgeInsets.all(4.0),
           color: colorTheme.onPrimary,
-          child: const Text('#1 Most Liked')),
+          child: const Text('Top Rated Activity')),
     );
   }
 
@@ -73,7 +67,6 @@ class _ItemDetailsState extends State<ItemDetails> {
       height: 200,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8.0),
-        // 3
         image: DecorationImage(
           image: NetworkImage(imageUrl),
           fit: BoxFit.cover,
@@ -82,22 +75,17 @@ class _ItemDetailsState extends State<ItemDetails> {
     );
   }
 
-  // 1
-  Widget _addToCartControl(Item item) {
-    // 2
+  Widget _addToPlanControl(Item item) {
     return CartControl(
-      // 3
       addToCart: (number) {
         const uuid = Uuid();
         final uniqueId = uuid.v4();
         final cartItem = CartItem(
             id: uniqueId, name: item.name, price: item.price, quantity: number);
-        // 4
         setState(() {
           widget.cartManager.addItem(cartItem);
           widget.quantityUpdated();
         });
-        // 5
         Navigator.pop(context);
       },
     );

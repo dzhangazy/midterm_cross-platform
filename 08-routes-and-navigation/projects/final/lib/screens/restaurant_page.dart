@@ -45,7 +45,7 @@ class _RestaurantPageState extends State<RestaurantPage> {
       slivers: [
         _buildSliverAppBar(),
         _buildInfoSection(),
-        _buildGridViewSection('Menu'),
+        _buildGridViewSection('Activities'),
       ],
     );
   }
@@ -74,7 +74,7 @@ class _RestaurantPageState extends State<RestaurantPage> {
                   left: 16.0,
                   child: CircleAvatar(
                     radius: 30,
-                    child: Icon(Icons.store, color: Colors.white),
+                    child: Icon(Icons.travel_explore, color: Colors.white),
                   ),
                 ),
               ],
@@ -181,7 +181,7 @@ class _RestaurantPageState extends State<RestaurantPage> {
         onSubmit: (order) {
           widget.ordersManager.addOrder(order);
           context.pop();
-          context.go('/${YummyTab.orders.value}');
+          context.go('/${FinanceTripTab.transactions.value}');
         },
       )),
     );
@@ -194,9 +194,9 @@ class _RestaurantPageState extends State<RestaurantPage> {
   Widget _buildFloatingActionButton() {
     return FloatingActionButton.extended(
       onPressed: openDrawer,
-      tooltip: 'Cart',
-      icon: const Icon(Icons.shopping_cart),
-      label: Text('${widget.cartManager.items.length} Items in cart'),
+      tooltip: 'Trip Plan',
+      icon: const Icon(Icons.wallet),
+      label: Text('${widget.cartManager.items.length} Activities'),
     );
   }
 

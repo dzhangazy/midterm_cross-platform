@@ -15,7 +15,7 @@ class MyOrdersPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         centerTitle: false,
-        title: Text('My Orders', style: textTheme.headlineMedium),
+        title: Text('Recent Transactions', style: textTheme.headlineMedium),
       ),
       body: ListView.builder(
         itemCount: orderManager.totalOrders,
@@ -42,17 +42,23 @@ class OrderTile extends StatelessWidget {
       leading: ClipRRect(
         borderRadius: BorderRadius.circular(8.0),
         child: Image.asset(
-          'assets/food/burger.webp',
+          'assets/finance/transaction_icon.webp',
           width: 50.0,
           height: 50.0,
           fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) => Container(
+            width: 50.0,
+            height: 50.0,
+            color: Colors.blueGrey.withOpacity(0.2),
+            child: const Icon(Icons.receipt_long, color: Colors.blueGrey),
+          ),
         ),
       ),
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Scheduled',
+            'Completed',
             style: textTheme.bodyLarge,
           ),
           Text(order.getFormattedOrderInfo()),

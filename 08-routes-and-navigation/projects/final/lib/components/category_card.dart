@@ -24,13 +24,24 @@ class CategoryCard extends StatelessWidget {
               ClipRRect(
                 borderRadius:
                     const BorderRadius.vertical(top: Radius.circular(8.0)),
-                child: Image.asset(category.imageUrl),
+                child: Image.asset(
+                  category.imageUrl,
+                  height: 150,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    height: 150,
+                    width: double.infinity,
+                    color: Theme.of(context).colorScheme.secondaryContainer,
+                    child: const Icon(Icons.category, size: 60),
+                  ),
+                ),
               ),
             ],
           ),
           ListTile(
               title: Text(category.name, style: textTheme.titleSmall),
-              subtitle: Text('${category.numberOfRestaurants} places',
+              subtitle: Text('${category.numberOfItems} items',
                   style: textTheme.bodySmall)),
         ],
       ),

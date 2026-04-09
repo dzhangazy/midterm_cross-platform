@@ -49,9 +49,9 @@ class RestaurantItem extends StatelessWidget {
   Widget _buildPriceAndLikes() {
     return Row(
       children: [
-        Text('${item.price}'),
+        Text('\$${item.price}'),
         const SizedBox(width: 4),
-        const Icon(Icons.thumb_up, color: Colors.green, size: 18),
+        const Icon(Icons.star, color: Colors.amber, size: 18),
       ],
     );
   }
@@ -72,9 +72,17 @@ class RestaurantItem extends StatelessWidget {
         borderRadius: BorderRadius.circular(4),
         child: AspectRatio(
           aspectRatio: 1.0,
-          child: Image.network(
+          child: Image.asset(
             item.imageUrl,
             fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+              return Container(
+                width: 60,
+                height: 60,
+                color: Colors.grey[300],
+                child: const Icon(Icons.image),
+              );
+            },
           ),
         ),
       ),
@@ -92,7 +100,7 @@ class RestaurantItem extends StatelessWidget {
           borderRadius: BorderRadius.circular(16.0),
         ),
         child: const Text(
-          'Add',
+          'Plan',
           style: TextStyle(fontSize: 12.0, fontWeight: FontWeight.bold),
         ),
       ),

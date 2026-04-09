@@ -1,5 +1,5 @@
 name: yummy
-description: Yummy is a food platform for customers to order food from a wide variety of restaruants
+description: Finance Tracker & Trip Planner app.
 
 publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
@@ -29,6 +29,6 @@ flutter:
   assets:
     - assets/
     - assets/categories/
-    - assets/restaurants/
-    - assets/profile_pics/
-    - assets/food/
+    - assets/trips/
+    - assets/activities/
+    - assets/finance/

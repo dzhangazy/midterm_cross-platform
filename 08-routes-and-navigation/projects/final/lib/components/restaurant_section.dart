@@ -25,7 +25,7 @@ class RestaurantSection extends StatelessWidget {
           const Padding(
             padding: EdgeInsets.only(left: 16.0, bottom: 8.0),
             child: Text(
-              'Food near me',
+              'Planned Trips',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
           ),
@@ -40,7 +40,7 @@ class RestaurantSection extends StatelessWidget {
                     child: RestaurantLandscapeCard(
                       restaurant: restaurants[index],
                       onTap: () {
-                        context.go('/${YummyTab.home.value}/restaurant/${restaurants[index].id}');
+                        context.go('/${FinanceTripTab.dashboard.value}/restaurant/${restaurants[index].id}');
                       },
                     ));
               },

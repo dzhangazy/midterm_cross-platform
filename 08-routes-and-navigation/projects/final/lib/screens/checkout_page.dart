@@ -19,8 +19,8 @@ class CheckoutPage extends StatefulWidget {
 
 class _CheckoutPageState extends State<CheckoutPage> {
   final Map<int, Widget> myTabs = const <int, Widget>{
-    0: Text('Delivery'),
-    1: Text('Self Pick-Up')
+    0: Text('Business'),
+    1: Text('Personal')
   };
 
   Set<int> selectedSegment = {0};
@@ -58,9 +58,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
       showSelectedIcon: false,
       segments: const [
         ButtonSegment(
-            value: 0, label: Text('Delivery'), icon: Icon(Icons.pedal_bike)),
+            value: 0, label: Text('Business'), icon: Icon(Icons.business_center)),
         ButtonSegment(
-            value: 1, label: Text('Pickup'), icon: Icon(Icons.local_mall)),
+            value: 1, label: Text('Personal'), icon: Icon(Icons.person)),
       ],
       selected: selectedSegment,
       onSelectionChanged: onSegmentSelected,
@@ -71,7 +71,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
     return TextField(
       controller: _nameController,
       decoration: const InputDecoration(
-        labelText: 'Contact Name',
+        labelText: 'Trip Name',
       ),
     );
   }
@@ -154,7 +154,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 ),
               ),
               title: Text(item.name),
-              subtitle: Text('Price: \$${item.price}'),
+              subtitle: Text('Cost: \$${item.price}'),
             ),
           );
         },
@@ -186,7 +186,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Text(
-            '''Submit Order - \$${widget.cartManager.totalCost.toStringAsFixed(2)}'''),
+            '''Finalize Trip - \$${widget.cartManager.totalCost.toStringAsFixed(2)}'''),
       ),
     );
   }
@@ -209,7 +209,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Order Details', style: textTheme.headlineSmall),
+            Text('Trip Details', style: textTheme.headlineSmall),
             const SizedBox(height: 16.0),
             _buildOrderSegmentedType(),
             const SizedBox(height: 16.0),
@@ -228,7 +228,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
               ],
             ),
             const SizedBox(height: 16.0),
-            Text('Order Summary'),
+            Text('Activity Summary'),
             _buildOrderSummary(context),
             _buildSubmitButton(),
           ],

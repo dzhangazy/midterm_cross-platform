@@ -23,13 +23,9 @@ class LoginPage extends StatelessWidget {
             return Row(
               children: [
                 Expanded(
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: double.infinity,
-                    child: Image.asset(
-                      'assets/login_background.webp',
-                      fit: BoxFit.cover,
-                    ),
+                  child: Image.asset(
+                    'assets/finance_bg.webp',
+                    fit: BoxFit.cover,
                   ),
                 ),
                 Expanded(
@@ -72,19 +68,26 @@ class LoginForm extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Image.asset(
-            'assets/yummy_logo.png',
+            'assets/app_logo.png',
             height: 150,
-            width: 150,
+            errorBuilder: (context, error, stackTrace) => const Icon(
+              Icons.account_balance_wallet,
+              size: 100,
+              color: Colors.blue,
+            ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 10),
+          Text(
+            'Finance & Trip Tracker',
+            style: Theme.of(context).textTheme.headlineSmall,
+          ),
+          const SizedBox(height: 30),
           TextField(
             controller: _usernameController,
             decoration: InputDecoration(
-              // filled: true,
               hintText: 'Username',
               border: OutlineInputBorder(
-                borderRadius:
-                    BorderRadius.circular(8.0), // Rounded corner border
+                borderRadius: BorderRadius.circular(8.0),
               ),
             ),
           ),
@@ -93,11 +96,9 @@ class LoginForm extends StatelessWidget {
             controller: _passwordController,
             obscureText: true,
             decoration: InputDecoration(
-              // filled: true,
               hintText: 'Password',
               border: OutlineInputBorder(
-                borderRadius:
-                    BorderRadius.circular(8.0), // Rounded corner border
+                borderRadius: BorderRadius.circular(8.0),
               ),
             ),
           ),

@@ -19,11 +19,11 @@ class Order {
 
   String getFormattedSegment() {
     if (selectedSegment.contains(0)) {
-      return 'Delivery';
+      return 'Business';
     } else if (selectedSegment.contains(1)) {
-      return 'Self Pick Up';
+      return 'Personal';
     } else {
-      return 'Unknown'; // Handle any other cases as needed
+      return 'Unknown';
     }
   }
 

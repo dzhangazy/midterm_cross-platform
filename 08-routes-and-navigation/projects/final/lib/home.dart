@@ -33,14 +33,14 @@ class _HomeState extends State<Home> {
   int tab = 0;
   List<NavigationDestination> appBarDestinations = const [
     NavigationDestination(
-      icon: Icon(Icons.home_outlined),
-      label: 'Explore',
-      selectedIcon: Icon(Icons.home),
+      icon: Icon(Icons.dashboard_outlined),
+      label: 'Dashboard',
+      selectedIcon: Icon(Icons.dashboard),
     ),
     NavigationDestination(
-      icon: Icon(Icons.list_outlined),
-      label: 'Orders',
-      selectedIcon: Icon(Icons.list),
+      icon: Icon(Icons.account_balance_wallet_outlined),
+      label: 'Transactions',
+      selectedIcon: Icon(Icons.account_balance_wallet),
     ),
     NavigationDestination(
       icon: Icon(Icons.person_2_outlined),
@@ -64,8 +64,8 @@ class _HomeState extends State<Home> {
           user: User(
               firstName: 'Stef',
               lastName: 'P',
-              role: 'Flutteristas',
-              profileImageUrl: 'assets/profile_pics/person_stef.jpeg',
+              role: 'Finance Planner',
+              profileImageUrl: '',
               points: 100,
               darkMode: true))
     ];

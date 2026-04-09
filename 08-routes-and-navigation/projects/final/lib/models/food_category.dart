@@ -1,22 +1,22 @@
 class FoodCategory {
   String name;
-  int numberOfRestaurants;
+  int numberOfItems;
   String imageUrl;
 
-  FoodCategory(this.name, this.numberOfRestaurants, this.imageUrl);
+  FoodCategory(this.name, this.numberOfItems, this.imageUrl);
 }
 
 List<FoodCategory> categories = [
-  FoodCategory('Dessert', 16, 'assets/categories/dessert.png'),
-  FoodCategory('Vegetarian', 20, 'assets/categories/vegetarian.png'),
-  FoodCategory('Burger', 21, 'assets/categories/burger.png'),
-  FoodCategory('Asian', 16, 'assets/categories/asian.png'),
-  FoodCategory('Italian', 18, 'assets/categories/italian.png'),
-  FoodCategory('Mexican', 15, 'assets/categories/mexican.png'),
-  FoodCategory('Seafood', 14, 'assets/categories/seafood.png'),
-  FoodCategory('Pizza', 19, 'assets/categories/pizza.png'),
-  FoodCategory('Sushi', 15, 'assets/categories/sushi.png'),
-  FoodCategory('Coffee', 22, 'assets/categories/coffee.png'),
-  FoodCategory('Fast Food', 23, 'assets/categories/fast_food.png'),
-  FoodCategory('Salad', 18, 'assets/categories/salad.png'),
+  FoodCategory('Flights', 16, 'assets/categories/flights.png'),
+  FoodCategory('Hotels', 20, 'assets/categories/hotels.png'),
+  FoodCategory('Dining', 21, 'assets/categories/dining.png'),
+  FoodCategory('Transport', 16, 'assets/categories/transport.png'),
+  FoodCategory('Shopping', 18, 'assets/categories/shopping.png'),
+  FoodCategory('Leisure', 15, 'assets/categories/leisure.png'),
+  FoodCategory('Savings', 14, 'assets/categories/savings.png'),
+  FoodCategory('Investment', 19, 'assets/categories/investment.png'),
+  FoodCategory('Insurance', 15, 'assets/categories/insurance.png'),
+  FoodCategory('Entertainment', 22, 'assets/categories/entertainment.png'),
+  FoodCategory('Bills', 23, 'assets/categories/bills.png'),
+  FoodCategory('Miscellaneous', 18, 'assets/categories/misc.png'),
 ];

@@ -7,7 +7,7 @@ import '../models/models.dart';
 import 'home.dart';
 
 void main() {
-  runApp(const Yummy());
+  runApp(const FinanceTripApp());
 }
 
 /// Allows the ability to scroll by dragging with touch, mouse, and trackpad.
@@ -20,19 +20,18 @@ class CustomScrollBehavior extends MaterialScrollBehavior {
       };
 }
 
-class Yummy extends StatefulWidget {
-  const Yummy({super.key});
+class FinanceTripApp extends StatefulWidget {
+  const FinanceTripApp({super.key});
 
   @override
-  State<Yummy> createState() => _YummyState();
+  State<FinanceTripApp> createState() => _FinanceTripAppState();
 }
 
-class _YummyState extends State<Yummy> {
+class _FinanceTripAppState extends State<FinanceTripApp> {
   ThemeMode themeMode = ThemeMode.light;
   ColorSelection colorSelected = ColorSelection.pink;
 
   /// Authentication to manage user login session
-  // ignore: unused_field
   final YummyAuth _auth = YummyAuth();
 
   /// Manage user's shopping cart for the items they order.
@@ -52,7 +51,7 @@ class _YummyState extends State<Yummy> {
               onLogIn: (Credentials credentials) async {
             _auth
                 .signIn(credentials.username, credentials.password)
-                .then((_) => context.go('/${YummyTab.home.value}'));
+                .then((_) => context.go('/${FinanceTripTab.dashboard.value}'));
           })),
       GoRoute(
           path: '/:tab',
@@ -107,7 +106,7 @@ class _YummyState extends State<Yummy> {
     }
     // Go to root of app / if the user is already signed in
     else if (loggedIn && isOnLoginPage) {
-      return '/${YummyTab.home.value}';
+      return '/${FinanceTripTab.dashboard.value}';
     }
 
     // no redirect

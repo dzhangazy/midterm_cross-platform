@@ -16,7 +16,7 @@ class PostSection extends StatelessWidget {
           const Padding(
             padding: EdgeInsets.only(left: 16.0, bottom: 8.0),
             child: Text(
-              'Friend\'s Activity',
+              'Trip Feed',
               style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold),

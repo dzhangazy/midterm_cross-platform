@@ -18,7 +18,7 @@ class RestaurantSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -30,17 +30,19 @@ class RestaurantSection extends StatelessWidget {
             ),
           ),
           SizedBox(
-            height: 230,
+            // Увеличили высоту с 230 до 260, чтобы новый дизайн поместился
+            height: 260,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               itemCount: restaurants.length,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
               itemBuilder: (context, index) {
                 return SizedBox(
                     width: 300,
                     child: RestaurantLandscapeCard(
                       restaurant: restaurants[index],
                       onTap: () {
-                        context.go('/${FinanceTripTab.dashboard.value}/restaurant/${restaurants[index].id}');
+                        context.go('/${FinanceTripTab.dashboard.value}/trip/${restaurants[index].id}');
                       },
                     ));
               },

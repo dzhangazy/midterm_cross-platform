@@ -33,19 +33,19 @@ class _HomeState extends State<Home> {
   int tab = 0;
   List<NavigationDestination> appBarDestinations = const [
     NavigationDestination(
-      icon: Icon(Icons.dashboard_outlined),
-      label: 'Dashboard',
-      selectedIcon: Icon(Icons.dashboard),
+      icon: Icon(Icons.grid_view_outlined),
+      label: 'Explore',
+      selectedIcon: Icon(Icons.grid_view_rounded),
     ),
     NavigationDestination(
-      icon: Icon(Icons.account_balance_wallet_outlined),
-      label: 'Transactions',
-      selectedIcon: Icon(Icons.account_balance_wallet),
+      icon: Icon(Icons.receipt_long_outlined),
+      label: 'History',
+      selectedIcon: Icon(Icons.receipt_long_rounded),
     ),
     NavigationDestination(
-      icon: Icon(Icons.person_2_outlined),
-      label: 'Account',
-      selectedIcon: Icon(Icons.person),
+      icon: Icon(Icons.account_circle_outlined),
+      label: 'Profile',
+      selectedIcon: Icon(Icons.account_circle_rounded),
     )
   ];
 
@@ -71,21 +71,11 @@ class _HomeState extends State<Home> {
     ];
 
     return Scaffold(
-      appBar: AppBar(
-        elevation: 0.0,
-        backgroundColor: Theme.of(context).colorScheme.background,
-        actions: [
-          ThemeButton(
-            changeThemeMode: widget.changeTheme,
-          ),
-          ColorButton(
-            changeColor: widget.changeColor,
-            colorSelected: widget.colorSelected,
-          ),
-        ],
-      ),
       body: IndexedStack(index: widget.tab, children: pages),
       bottomNavigationBar: NavigationBar(
+        elevation: 0,
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        indicatorColor: Theme.of(context).colorScheme.primaryContainer,
         selectedIndex: widget.tab,
         onDestinationSelected: (index) {
           context.go('/$index');

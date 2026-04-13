@@ -9,100 +9,80 @@ class RestaurantItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
 
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Expanded(child: _buildListItem()),
-        _buildImageStack(colorScheme),
-      ],
-    );
-  }
-
-  Widget _buildListItem() {
-    return ListTile(
-      contentPadding: const EdgeInsets.all(8.0),
-      title: Text(item.name),
-      subtitle: _buildSubtitle(),
-    );
-  }
-
-  Widget _buildSubtitle() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildDescription(),
-        const SizedBox(height: 4),
-        _buildPriceAndLikes(),
-      ],
-    );
-  }
-
-  Widget _buildDescription() {
-    return Text(
-      item.description,
-      maxLines: 2,
-      overflow: TextOverflow.ellipsis,
-    );
-  }
-
-  Widget _buildPriceAndLikes() {
-    return Row(
-      children: [
-        Text('\$${item.price}'),
-        const SizedBox(width: 4),
-        const Icon(Icons.star, color: Colors.amber, size: 18),
-      ],
-    );
-  }
-
-  Widget _buildImageStack(ColorScheme colorScheme) {
-    return Stack(
-      children: [
-        _buildImage(),
-        _buildAddButton(colorScheme),
-      ],
-    );
-  }
-
-  Widget _buildImage() {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(4),
-        child: AspectRatio(
-          aspectRatio: 1.0,
-          child: Image.asset(
-            item.imageUrl,
-            fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) {
-              return Container(
-                width: 60,
-                height: 60,
-                color: Colors.grey[300],
-                child: const Icon(Icons.image),
-              );
-            },
-          ),
-        ),
+    return Container(
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceVariant.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(12),
       ),
-    );
-  }
-
-  Widget _buildAddButton(ColorScheme colorScheme) {
-    return Positioned(
-      bottom: 8.0,
-      right: 8.0,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-        decoration: BoxDecoration(
-          color: colorScheme.onPrimary,
-          borderRadius: BorderRadius.circular(16.0),
-        ),
-        child: const Text(
-          'Plan',
-          style: TextStyle(fontSize: 12.0, fontWeight: FontWeight.bold),
-        ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(12, 8, 8, 8),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    item.name,
+                    style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    item.description,
+                    style: textTheme.bodySmall,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '\$${item.price}',
+                    style: textTheme.labelLarge?.copyWith(
+                      color: colorScheme.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Stack(
+              alignment: Alignment.bottomRight,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: SizedBox(
+                    width: 60,
+                    height: 60,
+                    child: Image.asset(
+                      item.imageUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        color: colorScheme.secondaryContainer,
+                        child: Icon(Icons.image_outlined, color: colorScheme.onSecondaryContainer),
+                      ),
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: colorScheme.primary,
+                    borderRadius: const BorderRadius.only(topLeft: Radius.circular(8), bottomRight: Radius.circular(8)),
+                  ),
+                  child: Icon(Icons.add, size: 14, color: colorScheme.onPrimary),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

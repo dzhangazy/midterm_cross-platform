@@ -1,16 +1,17 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
 import 'constants.dart';
 import '../screens/screens.dart';
 import '../models/models.dart';
 import 'home.dart';
 
 void main() {
+  usePathUrlStrategy();
   runApp(const FinanceTripApp());
 }
 
-/// Allows the ability to scroll by dragging with touch, mouse, and trackpad.
 class CustomScrollBehavior extends MaterialScrollBehavior {
   @override
   Set<PointerDeviceKind> get dragDevices => {
@@ -29,15 +30,10 @@ class FinanceTripApp extends StatefulWidget {
 
 class _FinanceTripAppState extends State<FinanceTripApp> {
   ThemeMode themeMode = ThemeMode.light;
-  ColorSelection colorSelected = ColorSelection.pink;
+  ColorSelection colorSelected = ColorSelection.indigo;
 
-  /// Authentication to manage user login session
   final YummyAuth _auth = YummyAuth();
-
-  /// Manage user's shopping cart for the items they order.
   final CartManager _cartManager = CartManager();
-
-  /// Manage user's orders submitted
   final OrderManager _orderManager = OrderManager();
 
   late final _router = GoRouter(
@@ -68,7 +64,7 @@ class _FinanceTripAppState extends State<FinanceTripApp> {
           },
           routes: [
             GoRoute(
-                path: 'restaurant/:id',
+                path: 'trip/:id',
                 builder: (context, state) {
                   final id =
                       int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
@@ -100,24 +96,19 @@ class _FinanceTripAppState extends State<FinanceTripApp> {
     final loggedIn = await _auth.loggedIn;
     final isOnLoginPage = state.matchedLocation == '/login';
 
-    // Go to /login if the user is not signed in
     if (!loggedIn) {
       return '/login';
     }
-    // Go to root of app / if the user is already signed in
     else if (loggedIn && isOnLoginPage) {
       return '/${FinanceTripTab.dashboard.value}';
     }
 
-    // no redirect
     return null;
   }
 
   void changeThemeMode(bool useLightMode) {
     setState(() {
-      themeMode = useLightMode
-          ? ThemeMode.light //
-          : ThemeMode.dark;
+      themeMode = useLightMode ? ThemeMode.light : ThemeMode.dark;
     });
   }
 
@@ -138,11 +129,41 @@ class _FinanceTripAppState extends State<FinanceTripApp> {
         colorSchemeSeed: colorSelected.color,
         useMaterial3: true,
         brightness: Brightness.light,
+        appBarTheme: const AppBarTheme(
+          elevation: 0,
+          scrolledUnderElevation: 0,
+          centerTitle: true,
+          backgroundColor: Colors.transparent,
+        ),
+        cardTheme: CardThemeData(
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: BorderSide(color: Colors.grey.withOpacity(0.1)),
+          ),
+        ),
+        navigationBarTheme: NavigationBarThemeData(
+          elevation: 0,
+          indicatorShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
       ),
       darkTheme: ThemeData(
         colorSchemeSeed: colorSelected.color,
         useMaterial3: true,
         brightness: Brightness.dark,
+        appBarTheme: const AppBarTheme(
+          elevation: 0,
+          scrolledUnderElevation: 0,
+          centerTitle: true,
+          backgroundColor: Colors.transparent,
+        ),
+        cardTheme: CardThemeData(
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: BorderSide(color: Colors.white.withOpacity(0.05)),
+          ),
+        ),
       ),
     );
   }

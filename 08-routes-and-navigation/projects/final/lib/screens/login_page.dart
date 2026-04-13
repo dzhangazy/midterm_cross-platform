@@ -39,10 +39,27 @@ class LoginPage extends StatelessWidget {
             );
           } else {
             // Display Mobile View
-            return Column(
+            return Stack(
               children: [
-                Expanded(
-                  child: LoginForm(onLogIn: onLogIn),
+                Positioned.fill(
+                  child: Image.asset(
+                    'assets/finance_bg.webp',
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                Positioned.fill(
+                  child: Container(
+                    color: Colors.black.withOpacity(0.5),
+                  ),
+                ),
+                Center(
+                  child: FractionallySizedBox(
+                    widthFactor: 0.85,
+                    child: Card(
+                      elevation: 8,
+                      child: LoginForm(onLogIn: onLogIn),
+                    ),
+                  ),
                 ),
               ],
             );
@@ -63,16 +80,17 @@ class LoginForm extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(24.0),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Image.asset(
             'assets/app_logo.png',
-            height: 150,
+            height: 100,
             errorBuilder: (context, error, stackTrace) => const Icon(
               Icons.account_balance_wallet,
-              size: 100,
+              size: 80,
               color: Colors.blue,
             ),
           ),

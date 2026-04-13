@@ -36,121 +36,118 @@ class _RestaurantPageState extends State<RestaurantPage> {
   }
 
   int calculateColumnCount(double screenWidth) {
-    const desktopThreshold = 700;
     return screenWidth > desktopThreshold ? 2 : 1;
   }
 
-  CustomScrollView _buildCustomScrollView() {
-    return CustomScrollView(
-      slivers: [
-        _buildSliverAppBar(),
-        _buildInfoSection(),
-        _buildGridViewSection('Activities'),
-      ],
-    );
-  }
+  @override
+  Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final constrainedWidth = _calculateConstrainedWidth(screenWidth);
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
 
-  SliverAppBar _buildSliverAppBar() {
-    return SliverAppBar(
-      pinned: true,
-      expandedHeight: 300.0,
-      flexibleSpace: FlexibleSpaceBar(
-        background: Center(
-          child: Padding(
-            padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 64.0),
-            child: Stack(
-              children: [
-                Container(
-                  margin: const EdgeInsets.only(bottom: 30.0),
-                  decoration: BoxDecoration(
-                      color: Colors.grey,
-                      borderRadius: BorderRadius.circular(16.0),
-                      image: DecorationImage(
-                          image: AssetImage(widget.restaurant.imageUrl),
-                          fit: BoxFit.cover)),
-                ),
-                const Positioned(
-                  bottom: 0.0,
-                  left: 16.0,
-                  child: CircleAvatar(
-                    radius: 30,
-                    child: Icon(Icons.travel_explore, color: Colors.white),
+    return Scaffold(
+      key: scaffoldKey,
+      endDrawer: _buildEndDrawer(),
+      floatingActionButton: _buildFloatingActionButton(),
+      body: Center(
+        child: SizedBox(
+          width: constrainedWidth,
+          child: CustomScrollView(
+            slivers: [
+              SliverAppBar(
+                expandedHeight: 250,
+                pinned: true,
+                flexibleSpace: FlexibleSpaceBar(
+                  title: Text(widget.restaurant.name, 
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
+                  background: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      Image.asset(widget.restaurant.imageUrl, fit: BoxFit.cover),
+                      const DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.bottomCenter,
+                            end: Alignment.topCenter,
+                            colors: [Colors.black54, Colors.transparent],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
+              ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(widget.restaurant.address, style: textTheme.bodyMedium?.copyWith(color: colorScheme.outline)),
+                                const SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    Icon(Icons.star, size: 20, color: Colors.amber[700]),
+                                    const SizedBox(width: 4),
+                                    Text(widget.restaurant.rating.toString(), style: textTheme.titleMedium),
+                                    const SizedBox(width: 16),
+                                    Icon(Icons.location_on, size: 20, color: colorScheme.primary),
+                                    const SizedBox(width: 4),
+                                    Text('${widget.restaurant.distance} miles', style: textTheme.titleMedium),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      Text('About this trip', style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 8),
+                      Text(widget.restaurant.attributes, style: textTheme.bodyLarge),
+                      const SizedBox(height: 32),
+                      Text('Available Activities', style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 16),
+                      _buildGridView(calculateColumnCount(screenWidth)),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  SliverToBoxAdapter _buildInfoSection() {
-    final textTheme = Theme.of(context).textTheme;
-    final restaurant = widget.restaurant;
-    return SliverToBoxAdapter(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(restaurant.name, style: textTheme.headlineLarge),
-            Text(restaurant.address, style: textTheme.bodySmall),
-            Text(restaurant.getRatingAndDistance(), style: textTheme.bodySmall),
-            Text(restaurant.attributes, style: textTheme.labelSmall),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildGridItem(int index) {
-    final item = widget.restaurant.items[index];
-    return InkWell(
-      onTap: () => _showBottomSheet(item),
-      child: RestaurantItem(item: item),
-    );
-  }
-
-  Widget _sectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Text(
-        title,
-        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-      ),
-    );
-  }
-
-  GridView _buildGridView(int columns) {
+  Widget _buildGridView(int columns) {
     return GridView.builder(
-      padding: const EdgeInsets.all(0),
+      padding: EdgeInsets.zero,
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         mainAxisSpacing: 16,
         crossAxisSpacing: 16,
-        childAspectRatio: 3.5,
+        childAspectRatio: columns == 2 ? 3.0 : 3.5,
         crossAxisCount: columns,
       ),
-      itemBuilder: (context, index) => _buildGridItem(index),
+      itemBuilder: (context, index) {
+        final item = widget.restaurant.items[index];
+        return InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () => _showBottomSheet(item),
+          child: RestaurantItem(item: item),
+        );
+      },
       itemCount: widget.restaurant.items.length,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-    );
-  }
-
-  SliverToBoxAdapter _buildGridViewSection(String title) {
-    final columns = calculateColumnCount(MediaQuery.of(context).size.width);
-    return SliverToBoxAdapter(
-      child: Container(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _sectionTitle(title),
-            _buildGridView(columns),
-          ],
-        ),
-      ),
     );
   }
 
@@ -158,14 +155,19 @@ class _RestaurantPageState extends State<RestaurantPage> {
     showModalBottomSheet<void>(
       isScrollControlled: true,
       context: context,
-      constraints: const BoxConstraints(maxWidth: 480),
-      builder: (context) =>
-        ItemDetails(
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+        ),
+        child: ItemDetails(
           item: item, 
           cartManager: widget.cartManager,
           quantityUpdated: () {
             setState(() {});
           },),
+      ),
     );
   }
 
@@ -173,6 +175,7 @@ class _RestaurantPageState extends State<RestaurantPage> {
     return SizedBox(
       width: drawerWidth,
       child: Drawer(
+        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.only(topLeft: Radius.circular(28), bottomLeft: Radius.circular(28))),
         child: CheckoutPage(
         cartManager: widget.cartManager,
         didUpdate: () {
@@ -187,34 +190,15 @@ class _RestaurantPageState extends State<RestaurantPage> {
     );
   }
 
-  void openDrawer() {
-    scaffoldKey.currentState!.openEndDrawer();
-  }
-
   Widget _buildFloatingActionButton() {
+    if (widget.cartManager.isEmpty) return const SizedBox.shrink();
+    
     return FloatingActionButton.extended(
-      onPressed: openDrawer,
-      tooltip: 'Trip Plan',
-      icon: const Icon(Icons.wallet),
-      label: Text('${widget.cartManager.items.length} Activities'),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final constrainedWidth = _calculateConstrainedWidth(screenWidth);
-
-    return Scaffold(
-      key: scaffoldKey,
-      endDrawer: _buildEndDrawer(),
-      floatingActionButton: _buildFloatingActionButton(),
-      body: Center(
-        child: SizedBox(
-          width: constrainedWidth,
-          child: _buildCustomScrollView(),
-        ),
-      ),
+      onPressed: () => scaffoldKey.currentState!.openEndDrawer(),
+      backgroundColor: Theme.of(context).colorScheme.primary,
+      foregroundColor: Theme.of(context).colorScheme.onPrimary,
+      icon: const Icon(Icons.wallet_travel),
+      label: Text('Review Plan (${widget.cartManager.items.length})'),
     );
   }
 }

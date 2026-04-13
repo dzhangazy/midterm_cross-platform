@@ -18,11 +18,6 @@ class CheckoutPage extends StatefulWidget {
 }
 
 class _CheckoutPageState extends State<CheckoutPage> {
-  final Map<int, Widget> myTabs = const <int, Widget>{
-    0: Text('Business'),
-    1: Text('Personal')
-  };
-
   Set<int> selectedSegment = {0};
   TimeOfDay? selectedTime;
   DateTime? selectedDate;
@@ -34,7 +29,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
     if (dateTime == null) {
       return 'Select Date';
     }
-    final formatter = DateFormat('yyyy-MM-dd');
+    final formatter = DateFormat('MMM dd, yyyy');
     return formatter.format(dateTime);
   }
 
@@ -54,24 +49,30 @@ class _CheckoutPageState extends State<CheckoutPage> {
   }
 
   Widget _buildOrderSegmentedType() {
-    return SegmentedButton(
-      showSelectedIcon: false,
-      segments: const [
-        ButtonSegment(
-            value: 0, label: Text('Business'), icon: Icon(Icons.business_center)),
-        ButtonSegment(
-            value: 1, label: Text('Personal'), icon: Icon(Icons.person)),
-      ],
-      selected: selectedSegment,
-      onSelectionChanged: onSegmentSelected,
+    return Container(
+      width: double.infinity,
+      child: SegmentedButton(
+        showSelectedIcon: false,
+        segments: const [
+          ButtonSegment(
+              value: 0, label: Text('Business'), icon: Icon(Icons.business_center_rounded)),
+          ButtonSegment(
+              value: 1, label: Text('Personal'), icon: Icon(Icons.person_rounded)),
+        ],
+        selected: selectedSegment,
+        onSelectionChanged: onSegmentSelected,
+      ),
     );
   }
 
   Widget _buildTextField() {
     return TextField(
       controller: _nameController,
-      decoration: const InputDecoration(
-        labelText: 'Trip Name',
+      decoration: InputDecoration(
+        labelText: 'Trip Reference Name',
+        hintText: 'e.g., Summer Vacation 2024',
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        prefixIcon: const Icon(Icons.edit_note_rounded),
       ),
     );
   }
@@ -95,14 +96,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
       context: context,
       initialEntryMode: TimePickerEntryMode.input,
       initialTime: selectedTime ?? TimeOfDay.now(),
-      builder: (context, child) {
-        return MediaQuery(
-          data: MediaQuery.of(context).copyWith(
-            alwaysUse24HourFormat: true,
-          ),
-          child: child!,
-        );
-      },
     );
     if (picked != null && picked != selectedTime) {
       setState(() {
@@ -112,104 +105,123 @@ class _CheckoutPageState extends State<CheckoutPage> {
   }
 
   Widget _buildOrderSummary(BuildContext context) {
-    final colorTheme = Theme.of(context).colorScheme;
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
 
-    return Expanded(
-      child: ListView.builder(
-        itemCount: widget.cartManager.items.length,
-        itemBuilder: (context, index) {
-          final item = widget.cartManager.itemAt(index);
-
-          // TODO: Wrap in a Dismissible Widget
-          return Dismissible(
-            key: Key(item.id),
-            direction: DismissDirection.endToStart,
-            background: Container(),
-            secondaryBackground: const SizedBox(
-              child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Icon(Icons.delete),
-                  ]),
+    return ListView.separated(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: widget.cartManager.items.length,
+      separatorBuilder: (context, index) => const SizedBox(height: 8),
+      itemBuilder: (context, index) {
+        final item = widget.cartManager.itemAt(index);
+        return Dismissible(
+          key: Key(item.id),
+          direction: DismissDirection.endToStart,
+          background: Container(
+            alignment: Alignment.centerRight,
+            padding: const EdgeInsets.only(right: 20),
+            decoration: BoxDecoration(
+              color: colorScheme.errorContainer,
+              borderRadius: BorderRadius.circular(12),
             ),
-            onDismissed: (direction) {
-              setState(() {
-                widget.cartManager.removeItem(item.id);
-              });
-              widget.didUpdate();
-            },
-            child: ListTile(
-              leading: Container(
-                padding: const EdgeInsets.all(8.0),
-                decoration: BoxDecoration(
-                  borderRadius: const BorderRadius.all(Radius.circular(8.0)),
-                  border: Border.all(
-                    color: colorTheme.primary,
-                    width: 2.0,
+            child: Icon(Icons.delete_outline_rounded, color: colorScheme.onErrorContainer),
+          ),
+          onDismissed: (direction) {
+            setState(() {
+              widget.cartManager.removeItem(item.id);
+            });
+            widget.didUpdate();
+          },
+          child: Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: colorScheme.surfaceVariant.withOpacity(0.3),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: colorScheme.primary,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    '${item.quantity}x',
+                    style: TextStyle(color: colorScheme.onPrimary, fontWeight: FontWeight.bold),
                   ),
                 ),
-                child: ClipRRect(
-                  borderRadius: const BorderRadius.all(Radius.circular(8.0)),
-                  child: Text('x${item.quantity}'),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(item.name, style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
+                      Text('\$${item.price.toStringAsFixed(2)} each', style: textTheme.bodySmall),
+                    ],
+                  ),
                 ),
-              ),
-              title: Text(item.name),
-              subtitle: Text('Cost: \$${item.price}'),
+                Text(
+                  '\$${(item.price * item.quantity).toStringAsFixed(2)}',
+                  style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+                ),
+              ],
             ),
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 
   Widget _buildSubmitButton() {
-    return ElevatedButton(
-      onPressed: widget.cartManager.isEmpty
-          ? null
-          : () {
-        final selectedSegment = this.selectedSegment;
-        final selectedTime = this.selectedTime;
-        final selectedDate = this.selectedDate;
-        final name = _nameController.text;
-        final items = widget.cartManager.items;
-
-        final order = Order(
-            selectedSegment: selectedSegment,
-            selectedTime: selectedTime,
-            selectedDate: selectedDate,
-            name: name,
-            items: items);
-
-        widget.cartManager.resetCart();
-        widget.onSubmit(order);
-      },
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
+    final colorScheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      child: FilledButton(
+        style: FilledButton.styleFrom(
+          minimumSize: const Size(double.infinity, 56),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        ),
+        onPressed: widget.cartManager.isEmpty
+            ? null
+            : () {
+                final order = Order(
+                    selectedSegment: selectedSegment,
+                    selectedTime: selectedTime,
+                    selectedDate: selectedDate,
+                    name: _nameController.text,
+                    items: widget.cartManager.items);
+                widget.cartManager.resetCart();
+                widget.onSubmit(order);
+              },
         child: Text(
-            '''Finalize Trip - \$${widget.cartManager.totalCost.toStringAsFixed(2)}'''),
+          'Confirm Trip - \$${widget.cartManager.totalCost.toStringAsFixed(2)}',
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context)
-        .textTheme
-        .apply(displayColor: Theme.of(context).colorScheme.onSurface);
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(
+        title: const Text('Trip Summary', style: TextStyle(fontWeight: FontWeight.bold)),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.close_rounded),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Trip Details', style: textTheme.headlineSmall),
+            Text('Planning Details', style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
             const SizedBox(height: 16.0),
             _buildOrderSegmentedType(),
             const SizedBox(height: 16.0),
@@ -217,19 +229,57 @@ class _CheckoutPageState extends State<CheckoutPage> {
             const SizedBox(height: 16.0),
             Row(
               children: [
-                TextButton(
-                  child: Text(formatDate(selectedDate)),
-                  onPressed: () => _selectDate(context),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    icon: const Icon(Icons.calendar_today_rounded, size: 18),
+                    label: Text(formatDate(selectedDate)),
+                    onPressed: () => _selectDate(context),
+                  ),
                 ),
-                TextButton(
-                  child: Text(formatTimeOfDay(selectedTime)),
-                  onPressed: () => _selectTime(context),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    icon: const Icon(Icons.access_time_rounded, size: 18),
+                    label: Text(formatTimeOfDay(selectedTime)),
+                    onPressed: () => _selectTime(context),
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 16.0),
-            Text('Activity Summary'),
+            const SizedBox(height: 32.0),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Activities', style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                Text('${widget.cartManager.items.length} items', style: textTheme.bodySmall),
+              ],
+            ),
+            const SizedBox(height: 12),
             _buildOrderSummary(context),
+            const SizedBox(height: 24),
+            const Divider(),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Total Budget', style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                Text(
+                  '\$${widget.cartManager.totalCost.toStringAsFixed(2)}',
+                  style: textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.primary,
+                  ),
+                ),
+              ],
+            ),
             _buildSubmitButton(),
           ],
         ),

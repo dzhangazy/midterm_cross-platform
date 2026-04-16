@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../models/models.dart';
+import '../constants.dart';
 
 class MyOrdersPage extends StatelessWidget {
   final OrderManager orderManager;
@@ -33,7 +35,13 @@ class MyOrdersPage extends StatelessWidget {
             itemCount: orderManager.totalOrders,
             separatorBuilder: (context, index) => const SizedBox(height: 12),
             itemBuilder: (context, index) {
-              return OrderTile(order: orderManager.orders[index]);
+              return OrderTile(
+                order: orderManager.orders[index],
+                onTap: () {
+                  // Переход к деталям транзакции
+                  context.go('/${FinanceTripTab.transactions.value}/order/$index');
+                },
+              );
             },
           ),
     );
@@ -42,8 +50,9 @@ class MyOrdersPage extends StatelessWidget {
 
 class OrderTile extends StatelessWidget {
   final Order order;
+  final VoidCallback onTap;
 
-  const OrderTile({super.key, required this.order});
+  const OrderTile({super.key, required this.order, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -57,6 +66,7 @@ class OrderTile extends StatelessWidget {
         border: Border.all(color: colorScheme.outlineVariant.withOpacity(0.5)),
       ),
       child: ListTile(
+        onTap: onTap,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: Container(
           padding: const EdgeInsets.all(10),
@@ -78,15 +88,7 @@ class OrderTile extends StatelessWidget {
             Text('${order.items.length} activities planned', style: textTheme.bodySmall),
           ],
         ),
-        trailing: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            const Text('Completed', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 12)),
-            const SizedBox(height: 4),
-            Icon(Icons.chevron_right, color: colorScheme.outline),
-          ],
-        ),
+        trailing: Icon(Icons.chevron_right, color: colorScheme.outline),
       ),
     );
   }

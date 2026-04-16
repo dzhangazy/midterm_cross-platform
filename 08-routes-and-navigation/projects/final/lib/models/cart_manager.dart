@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 class CartItem {
   final String id;
   final String name;
@@ -16,29 +18,28 @@ class CartItem {
 
 enum DeliveryMode { delivery, pickup }
 
-class CartManager {
+class CartManager extends ChangeNotifier {
   final List<CartItem> _items = [];
   DeliveryMode _mode = DeliveryMode.pickup;
   DateTime? _timeOfPickupOrDelivery;
 
-  // Add a new item to the cart
   void addItem(CartItem item) {
     _items.add(item);
+    notifyListeners(); // Уведомляем об изменениях
   }
 
-  // Remove an item from the cart by its id
   void removeItem(String id) {
     _items.removeWhere((item) => item.id == id);
+    notifyListeners();
   }
 
-  // Reset the shopping cart
   void resetCart() {
     _items.clear();
     _mode = DeliveryMode.pickup;
     _timeOfPickupOrDelivery = null;
+    notifyListeners();
   }
 
-  // Retrieve the item for a specific index.
   CartItem itemAt(int index) {
     if (index >= 0 && index < _items.length) {
       return _items[index];
@@ -47,30 +48,24 @@ class CartManager {
     }
   }
 
-  // Calculate the total cost of the cart
   double get totalCost {
     return _items.fold(0.0, (sum, item) => sum + item.totalCost);
   }
 
-  // Get list of items in the cart
   List<CartItem> get items => List.unmodifiable(_items);
-
-  // Check if the cart is empty.
   bool get isEmpty => _items.isEmpty;
 
-  // Set delivery or pickup mode
   void setMode(DeliveryMode mode) {
     _mode = mode;
+    notifyListeners();
   }
 
-  // Get current mode (Delivery or Pickup)
   DeliveryMode get mode => _mode;
 
-  // Set time for pickup or delivery
   void setTime(DateTime time) {
     _timeOfPickupOrDelivery = time;
+    notifyListeners();
   }
 
-  // Get time of pickup or delivery
   DateTime? get time => _timeOfPickupOrDelivery;
 }

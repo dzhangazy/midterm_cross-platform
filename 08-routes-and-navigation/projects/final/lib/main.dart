@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'constants.dart';
-import '../screens/screens.dart';
-import '../models/models.dart';
+import 'screens/screens.dart';
+import 'models/models.dart';
 import 'home.dart';
 
 void main() {
@@ -36,86 +36,107 @@ class _FinanceTripAppState extends State<FinanceTripApp> {
   final CartManager _cartManager = CartManager();
   final OrderManager _orderManager = OrderManager();
 
-  late final _router = GoRouter(
-    initialLocation: '/login',
-    redirect: _appRedirect,
-    routes: [
-      GoRoute(
-        path: '/login',
-        builder: (context, state) =>
-          LoginPage(
-              onLogIn: (Credentials credentials) async {
-            _auth
-                .signIn(credentials.username, credentials.password)
-                .then((_) => context.go('/${FinanceTripTab.dashboard.value}'));
-          })),
-      GoRoute(
+  late final GoRouter _router;
+
+  @override
+  void initState() {
+    super.initState();
+    _router = GoRouter(
+      initialLocation: '/login',
+      routes: [
+        GoRoute(
+          path: '/login',
+          pageBuilder: (context, state) => CustomTransitionPage(
+            key: state.pageKey,
+            child: LoginPage(
+              onLogIn: (credentials) {
+                _auth.signIn(credentials.username, credentials.password);
+                context.go('/0');
+              },
+            ),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return FadeTransition(
+                opacity: CurveTween(curve: Curves.easeInOut).animate(animation),
+                child: child,
+              );
+            },
+          ),
+        ),
+        GoRoute(
           path: '/:tab',
-          builder: (context, state) {
-            return Home(
-              auth: _auth,
-              cartManager: _cartManager,
-              ordersManager: _orderManager,
-              changeTheme: changeThemeMode,
-              changeColor: changeColor,
-              colorSelected: colorSelected,
-              tab: int.tryParse(
-                state.pathParameters['tab'] ?? '') ?? 0);
+          pageBuilder: (context, state) {
+            final tabStr = state.pathParameters['tab'] ?? '0';
+            final tab = int.tryParse(tabStr) ?? 0;
+            return CustomTransitionPage(
+              key: state.pageKey,
+              child: Home(
+                auth: _auth,
+                cartManager: _cartManager,
+                ordersManager: _orderManager,
+                changeTheme: (bool val) {
+                  setState(() => themeMode = val ? ThemeMode.light : ThemeMode.dark);
+                },
+                changeColor: (int val) {
+                  setState(() => colorSelected = ColorSelection.values[val]);
+                },
+                colorSelected: colorSelected,
+                tab: tab,
+              ),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                return SlideTransition(
+                  position: animation.drive(
+                    Tween<Offset>(
+                      begin: const Offset(0, 0.1),
+                      end: Offset.zero,
+                    ).chain(CurveTween(curve: Curves.easeOutCubic)),
+                  ),
+                  child: FadeTransition(opacity: animation, child: child),
+                );
+              },
+            );
           },
           routes: [
             GoRoute(
-                path: 'trip/:id',
-                builder: (context, state) {
-                  final id =
-                      int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
-                  final restaurant = restaurants[id];
-                  return RestaurantPage(
-                    restaurant: restaurant,
-                    cartManager: _cartManager,
-                    ordersManager: _orderManager,
-                  );
-                }),
-          ]),
-    ],
-    errorPageBuilder: (context, state) {
-      return MaterialPage(
-        key: state.pageKey,
-        child: Scaffold(
-          body: Center(
-            child: Text(
-              state.error.toString(),
+              path: 'trip/:id',
+              builder: (context, state) {
+                final id = int.tryParse(state.pathParameters['id'] ?? '0') ?? 0;
+                return RestaurantPage(
+                  restaurant: restaurants[id],
+                  cartManager: _cartManager,
+                  ordersManager: _orderManager,
+                );
+              },
             ),
-          ),
+            // НОВЫЙ МАРШРУТ ДЛЯ ДЕТАЛЕЙ ТРАНЗАКЦИИ
+            GoRoute(
+              path: 'order/:id',
+              builder: (context, state) {
+                final id = int.tryParse(state.pathParameters['id'] ?? '0') ?? 0;
+                final order = _orderManager.orders[id];
+                return Scaffold(
+                  appBar: AppBar(title: const Text('Transaction Details')),
+                  body: ListView.separated(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: order.items.length,
+                    separatorBuilder: (context, index) => const Divider(),
+                    itemBuilder: (context, index) {
+                      final item = order.items[index];
+                      return ListTile(
+                        leading: const Icon(Icons.check_circle_outline, color: Colors.green),
+                        title: Text(item.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                        subtitle: Text('Quantity: ${item.quantity}'),
+                        trailing: Text('\$${(item.price * item.quantity).toStringAsFixed(0)}', 
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                      );
+                    },
+                  ),
+                );
+              },
+            ),
+          ],
         ),
-      );
-    },
-  );
-
-  Future<String?> _appRedirect(
-      BuildContext context, GoRouterState state) async {
-    final loggedIn = await _auth.loggedIn;
-    final isOnLoginPage = state.matchedLocation == '/login';
-
-    if (!loggedIn) {
-      return '/login';
-    }
-    else if (loggedIn && isOnLoginPage) {
-      return '/${FinanceTripTab.dashboard.value}';
-    }
-
-    return null;
-  }
-
-  void changeThemeMode(bool useLightMode) {
-    setState(() {
-      themeMode = useLightMode ? ThemeMode.light : ThemeMode.dark;
-    });
-  }
-
-  void changeColor(int value) {
-    setState(() {
-      colorSelected = ColorSelection.values[value];
-    });
+      ],
+    );
   }
 
   @override
@@ -124,47 +145,16 @@ class _FinanceTripAppState extends State<FinanceTripApp> {
       debugShowCheckedModeBanner: false,
       routerConfig: _router,
       scrollBehavior: CustomScrollBehavior(),
-      themeMode: themeMode,
       theme: ThemeData(
         colorSchemeSeed: colorSelected.color,
         useMaterial3: true,
-        brightness: Brightness.light,
-        appBarTheme: const AppBarTheme(
-          elevation: 0,
-          scrolledUnderElevation: 0,
-          centerTitle: true,
-          backgroundColor: Colors.transparent,
-        ),
-        cardTheme: CardThemeData(
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-            side: BorderSide(color: Colors.grey.withOpacity(0.1)),
-          ),
-        ),
-        navigationBarTheme: NavigationBarThemeData(
-          elevation: 0,
-          indicatorShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ),
       ),
       darkTheme: ThemeData(
         colorSchemeSeed: colorSelected.color,
         useMaterial3: true,
         brightness: Brightness.dark,
-        appBarTheme: const AppBarTheme(
-          elevation: 0,
-          scrolledUnderElevation: 0,
-          centerTitle: true,
-          backgroundColor: Colors.transparent,
-        ),
-        cardTheme: CardThemeData(
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-            side: BorderSide(color: Colors.white.withOpacity(0.05)),
-          ),
-        ),
       ),
+      themeMode: themeMode,
     );
   }
 }

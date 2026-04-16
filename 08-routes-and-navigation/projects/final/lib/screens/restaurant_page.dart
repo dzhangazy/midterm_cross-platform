@@ -21,12 +21,34 @@ class RestaurantPage extends StatefulWidget {
   State<RestaurantPage> createState() => _RestaurantPageState();
 }
 
-class _RestaurantPageState extends State<RestaurantPage> {
+class _RestaurantPageState extends State<RestaurantPage> with SingleTickerProviderStateMixin {
   static const double largeScreenPercentage = 0.9;
   static const double maxWidth = 1000;
   static const desktopThreshold = 700;
   static const double drawerWidth = 375.0;
   final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
+
+  late AnimationController _pulseController;
+  late Animation<double> _pulseAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulseController = AnimationController(
+      duration: const Duration(seconds: 1),
+      vsync: this,
+    )..repeat(reverse: true);
+    
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.1).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
+  }
 
   double _calculateConstrainedWidth(double screenWidth) {
     return (screenWidth > desktopThreshold
@@ -193,12 +215,15 @@ class _RestaurantPageState extends State<RestaurantPage> {
   Widget _buildFloatingActionButton() {
     if (widget.cartManager.isEmpty) return const SizedBox.shrink();
     
-    return FloatingActionButton.extended(
-      onPressed: () => scaffoldKey.currentState!.openEndDrawer(),
-      backgroundColor: Theme.of(context).colorScheme.primary,
-      foregroundColor: Theme.of(context).colorScheme.onPrimary,
-      icon: const Icon(Icons.wallet_travel),
-      label: Text('Review Plan (${widget.cartManager.items.length})'),
+    return ScaleTransition(
+      scale: _pulseAnimation,
+      child: FloatingActionButton.extended(
+        onPressed: () => scaffoldKey.currentState!.openEndDrawer(),
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        foregroundColor: Theme.of(context).colorScheme.onPrimary,
+        icon: const Icon(Icons.wallet_travel),
+        label: Text('Review Plan (${widget.cartManager.items.length})'),
+      ),
     );
   }
 }

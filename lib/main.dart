@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -13,7 +14,12 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final prefs = await SharedPreferences.getInstance();
   usePathUrlStrategy();
-  runApp(FinanceTripApp(prefs: prefs));
+  
+  runApp(
+    ProviderScope(
+      child: FinanceTripApp(prefs: prefs),
+    ),
+  );
 }
 
 class CustomScrollBehavior extends MaterialScrollBehavior {
@@ -25,15 +31,15 @@ class CustomScrollBehavior extends MaterialScrollBehavior {
       };
 }
 
-class FinanceTripApp extends StatefulWidget {
+class FinanceTripApp extends ConsumerStatefulWidget {
   final SharedPreferences prefs;
   const FinanceTripApp({super.key, required this.prefs});
 
   @override
-  State<FinanceTripApp> createState() => _FinanceTripAppState();
+  ConsumerState<FinanceTripApp> createState() => _FinanceTripAppState();
 }
 
-class _FinanceTripAppState extends State<FinanceTripApp> {
+class _FinanceTripAppState extends ConsumerState<FinanceTripApp> {
   ThemeMode themeMode = ThemeMode.light;
   ColorSelection colorSelected = ColorSelection.indigo;
 
@@ -76,8 +82,8 @@ class _FinanceTripAppState extends State<FinanceTripApp> {
             final tabStr = state.pathParameters['tab'] ?? '0';
             final tab = int.tryParse(tabStr) ?? 0;
             
-            // Save tab index whenever it changes in the route
-            _settingsManager.setTabIndex(tab);
+            // ИСПРАВЛЕНИЕ: Используем microtask, чтобы не вызывать notifyListeners во время build
+            Future.microtask(() => _settingsManager.setTabIndex(tab));
 
             return CustomTransitionPage(
               key: state.pageKey,
@@ -85,7 +91,7 @@ class _FinanceTripAppState extends State<FinanceTripApp> {
                 auth: _auth,
                 cartManager: _cartManager,
                 ordersManager: _orderManager,
-                settingsManager: _settingsManager, // Передали сюда
+                settingsManager: _settingsManager,
                 changeTheme: (bool val) {
                   setState(() => themeMode = val ? ThemeMode.light : ThemeMode.dark);
                 },

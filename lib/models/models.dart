@@ -5,3 +5,6 @@ export 'order_manager.dart';
 export 'post.dart';
 export 'restaurant.dart';
 export 'user.dart';
+export 'expense.dart';
+export 'trip.dart';
+export 'tracker_state.dart';

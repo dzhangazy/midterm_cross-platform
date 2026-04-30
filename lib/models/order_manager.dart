@@ -17,6 +17,10 @@ class Order {
     required this.items,
   });
 
+  double get totalCost {
+    return items.fold(0.0, (sum, item) => sum + item.totalCost);
+  }
+
   String getFormattedSegment() {
     if (selectedSegment.contains(0)) {
       return 'Business';
@@ -61,17 +65,23 @@ class Order {
   }
 }
 
-class OrderManager {
+class OrderManager extends ChangeNotifier {
   final List<Order> _orders = [];
 
-  List<Order> get orders => _orders; // Getter to access the orders
+  List<Order> get orders => List.unmodifiable(_orders);
+
+  double get totalSpent {
+    return _orders.fold(0.0, (sum, order) => sum + order.totalCost);
+  }
 
   void addOrder(Order order) {
     _orders.add(order);
+    notifyListeners();
   }
 
   void removeOrder(Order order) {
     _orders.remove(order);
+    notifyListeners();
   }
 
   int get totalOrders => _orders.length;

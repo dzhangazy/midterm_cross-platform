@@ -1,12 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/tracker_state.dart';
-import '../models/trip.dart';
-import '../models/expense.dart';
+import '../models/models.dart';
 import '../api/tracker_service.dart';
 import 'repository.dart';
 
-class TripRepository extends StateNotifier<TrackerState> implements Repository {
-  TripRepository() : super(const TrackerState());
+class TripRepository extends Notifier<CurrentTripData> implements Repository {
+  @override
+  CurrentTripData build() => const CurrentTripData();
 
   @override
   Future<List<Trip>> findAllTrips() async => state.trips;
@@ -21,36 +20,31 @@ class TripRepository extends StateNotifier<TrackerState> implements Repository {
   Stream<List<Expense>> watchAllExpenses() => Stream.value(state.currentExpenses);
 
   @override
-  Future<void> insertTrip(Trip trip) async {
-    state = state.copyWith(trips: [...state.trips, trip]);
-  }
+  Future<void> insertTrip(Trip trip) async {}
 
   @override
-  Future<void> insertExpense(Expense expense) async {
-    state = state.copyWith(
-      currentExpenses: [...state.currentExpenses, expense],
-      currentSpending: state.currentSpending + expense.amount,
-    );
-  }
+  Future<void> insertExpense(Expense expense) async {}
 
   @override
-  Future<void> deleteTrip(Trip trip) async {
-    state = state.copyWith(
-      trips: state.trips.where((t) => t.id != trip.id).toList(),
-    );
-  }
+  Future<void> deleteTrip(Trip trip) async {}
 
   @override
-  void close() {
-  }
+  Future<void> deleteExpense(Expense expense) async {}
+
+  @override
+  Future<void> toggleTripCompletion(Trip trip) async {}
+
+  @override
+  Future<void> syncWithApi() async {}
+
+  @override
+  void close() {}
 }
 
-// Провайдер репозитория
 final tripRepositoryProvider =
-    StateNotifierProvider<TripRepository, TrackerState>((ref) {
+    NotifierProvider<TripRepository, CurrentTripData>(() {
   return TripRepository();
 });
-
 
 final trackerServiceProvider = Provider<TrackerService>((ref) {
   return TrackerService.create();

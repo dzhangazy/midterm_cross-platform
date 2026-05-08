@@ -1,13 +1,13 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../models/models.dart';
 import '../models/settings_manager.dart';
-import '../models/trip.dart'; // Импортируем модель Trip
+import '../repositories/trip_repository.dart';
 
 typedef LogoutCallback = void Function(bool didLogout);
 
-class AccountPage extends StatefulWidget {
+class AccountPage extends ConsumerStatefulWidget {
   final User user;
   final LogoutCallback onLogOut;
   final SettingsManager settingsManager;
@@ -20,134 +20,187 @@ class AccountPage extends StatefulWidget {
   });
 
   @override
-  AccountPageState createState() => AccountPageState();
+  ConsumerState<AccountPage> createState() => _AccountPageState();
 }
 
-class AccountPageState extends State<AccountPage> {
+class _AccountPageState extends ConsumerState<AccountPage> {
   bool _notificationsEnabled = true;
-  double _budgetLimit = 5000;
-
-  // Функция для демонстрации JSON сериализации
-  void _testJsonSerialization() {
-    // 1. Представим, что мы получили это от сервера
-    const rawJson = '''
-    {
-      "id": "trip_777",
-      "destination": "Almaty, Kazakhstan",
-      "startDate": "2025-05-20T10:00:00Z",
-      "endDate": "2025-05-30T18:00:00Z",
-      "totalBudget": 2500.0,
-      "baseCurrency": "KZT"
-    }
-    ''';
-
-    // 2. Декодируем строку в Map
-    final Map<String, dynamic> data = jsonDecode(rawJson);
-
-    // 3. ПРЕВРАЩАЕМ В ОБЪЕКТ (fromJson) - ЭТО ДОКАЗАТЕЛЬСТВО
-    final testTrip = Trip.fromJson(data);
-
-    // 4. ПРЕВРАЩАЕМ ОБРАТНО В JSON (toJson)
-    final backToJson = jsonEncode(testTrip.toJson());
-
-    // Показываем результат в диалоге
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('JSON Serialization Test'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Object created successfully:', style: TextStyle(fontWeight: FontWeight.bold)),
-            Text('ID: ${testTrip.id}'),
-            Text('Destination: ${testTrip.destination}'),
-            Text('Date: ${testTrip.startDate.day}.${testTrip.startDate.month}.${testTrip.startDate.year}'),
-            const Divider(),
-            const Text('Back to JSON string:', style: TextStyle(fontWeight: FontWeight.bold)),
-            Text(backToJson, style: const TextStyle(fontSize: 10, color: Colors.grey)),
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cool!'))
-        ],
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final trackerState = ref.watch(tripRepositoryProvider);
     
-    return Scaffold(
-      backgroundColor: colorScheme.surface,
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            expandedHeight: 220,
-            pinned: true,
-            flexibleSpace: FlexibleSpaceBar(
-              background: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [colorScheme.primary, colorScheme.primaryContainer],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
+    // Подсчет статистики с учетом конвертации
+    final totalTrips = trackerState.trips.length;
+    final totalPlannedUsd = trackerState.trips.fold(0.0, (sum, t) => sum + t.budget);
+    final totalSpentUsd = trackerState.currentSpending;
+
+    return ListenableBuilder(
+      listenable: widget.settingsManager,
+      builder: (context, child) {
+        final symbol = widget.settingsManager.currencySymbol;
+        final totalPlanned = widget.settingsManager.convert(totalPlannedUsd);
+        final totalSpent = widget.settingsManager.convert(totalSpentUsd);
+        final breakdown = trackerState.categorySpending;
+
+        return Scaffold(
+          backgroundColor: colorScheme.surface,
+          body: CustomScrollView(
+            slivers: [
+              SliverAppBar(
+                expandedHeight: 180,
+                pinned: true,
+                flexibleSpace: FlexibleSpaceBar(
+                  background: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [colorScheme.primary, colorScheme.primaryContainer],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
+                    ),
+                    child: buildProfile(),
                   ),
                 ),
-                child: buildProfile(),
               ),
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildSectionTitle('Developer Tools (Proof)'),
-                  _buildSettingCard([
-                    ListTile(
-                      leading: const Icon(Icons.code_rounded, color: Colors.blue),
-                      title: const Text('Test JSON Serialization'),
-                      subtitle: const Text('Proof of auto-generated models'),
-                      onTap: _testJsonSerialization,
-                    ),
-                  ]),
-                  const SizedBox(height: 24),
-                  _buildSectionTitle('Finance Settings'),
-                  _buildSettingCard([
-                    _buildSwitchTile(
-                      'Budget Notifications', 
-                      'Get alerts when near limit', 
-                      Icons.notifications_active_outlined, 
-                      _notificationsEnabled,
-                      (val) => setState(() => _notificationsEnabled = val),
-                    ),
-                    _buildCurrencyTile(),
-                    _buildBudgetLimitTile(),
-                  ]),
-                  const SizedBox(height: 24),
-                  _buildSectionTitle('Support & Account'),
-                  _buildSettingCard([
-                    ListTile(
-                      leading: const Icon(Icons.help_outline_rounded),
-                      title: const Text('Travel Support'),
-                      trailing: const Icon(Icons.open_in_new_rounded, size: 18),
-                      onTap: () async {
-                        await launchUrl(Uri.parse('https://jangazy-portfolio.netlify.app/'));
-                      },
-                    ),
-                    ListTile(
-                      leading: Icon(Icons.logout_rounded, color: colorScheme.error),
-                      title: Text('Log out', style: TextStyle(color: colorScheme.error)),
-                      onTap: () => widget.onLogOut(true),
-                    ),
-                  ]),
-                ],
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildSectionTitle('Financial Overview'),
+                      _buildStatsGrid(totalTrips, totalPlanned, totalSpent, symbol),
+                      
+                      if (breakdown.isNotEmpty) ...[
+                        const SizedBox(height: 32),
+                        _buildSectionTitle('Spending by Category'),
+                        _buildCategoryChart(context, breakdown, totalSpentUsd),
+                      ],
+                      
+                      const SizedBox(height: 32),
+                      _buildSectionTitle('Finance Settings'),
+                      _buildSettingCard([
+                        _buildSwitchTile(
+                          'Budget Notifications', 
+                          'Get alerts when near limit', 
+                          Icons.notifications_active_outlined, 
+                          _notificationsEnabled,
+                          (val) => setState(() => _notificationsEnabled = val),
+                        ),
+                        _buildCurrencyTile(),
+                        _buildBudgetLimitTile(),
+                      ]),
+                      
+                      const SizedBox(height: 24),
+                      _buildSectionTitle('Support & Account'),
+                      _buildSettingCard([
+                        ListTile(
+                          leading: const Icon(Icons.help_outline_rounded),
+                          title: const Text('Travel Support'),
+                          onTap: () async {
+                            await launchUrl(Uri.parse('https://jangazy-portfolio.netlify.app/'));
+                          },
+                        ),
+                        ListTile(
+                          leading: Icon(Icons.logout_rounded, color: colorScheme.error),
+                          title: Text('Log out', style: TextStyle(color: colorScheme.error)),
+                          onTap: () => widget.onLogOut(true),
+                        ),
+                      ]),
+                      const SizedBox(height: 40),
+                    ],
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
+        );
+      },
+    );
+  }
+
+  Widget _buildCategoryChart(BuildContext context, Map<String, double> breakdown, double totalUsd) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Column(
+        children: breakdown.entries.map((entry) {
+          final percentage = totalUsd > 0 ? entry.value / totalUsd : 0.0;
+          final convertedAmount = widget.settingsManager.convert(entry.value);
+          final symbol = widget.settingsManager.currencySymbol;
+          
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(entry.key, style: const TextStyle(fontWeight: FontWeight.w500)),
+                    Text('$symbol${convertedAmount.toInt()} (${(percentage * 100).toInt()}%)', 
+                        style: const TextStyle(fontWeight: FontWeight.bold)),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                LinearProgressIndicator(
+                  value: percentage,
+                  minHeight: 6,
+                  borderRadius: BorderRadius.circular(3),
+                  backgroundColor: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.3),
+                ),
+              ],
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildStatsGrid(int trips, double budget, double spent, String symbol) {
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(child: _buildStatCard('Trips', trips.toString(), Icons.explore_outlined, Colors.blue)),
+            const SizedBox(width: 12),
+            Expanded(child: _buildStatCard('Spent', '$symbol${spent.toInt()}', Icons.payments_outlined, Colors.orange)),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(child: _buildStatCard('Planned', '$symbol${budget.toInt()}', Icons.account_balance_wallet_outlined, Colors.green)),
+            const SizedBox(width: 12),
+            Expanded(child: _buildStatCard('Remaining', '$symbol${(budget - spent).toInt()}', Icons.savings_outlined, Colors.purple)),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatCard(String label, String value, IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: color, size: 20),
+          const SizedBox(height: 8),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(value, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          ),
+          const SizedBox(height: 2),
+          Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[700])),
         ],
       ),
     );
@@ -175,7 +228,7 @@ class AccountPageState extends State<AccountPage> {
     return SwitchListTile(
       secondary: Icon(icon),
       title: Text(title, style: const TextStyle(fontWeight: FontWeight.w500)),
-      subtitle: Text(subtitle, style: const TextStyle(fontSize: 12)),
+      subtitle: Text(subtitle, style: const TextStyle(fontSize: 11)),
       value: value,
       onChanged: onChanged,
     );
@@ -206,19 +259,22 @@ class AccountPageState extends State<AccountPage> {
   }
 
   Widget _buildBudgetLimitTile() {
+    final symbol = widget.settingsManager.currencySymbol;
+    final convertedLimit = widget.settingsManager.convert(widget.settingsManager.budgetLimit);
+
     return Column(
       children: [
         ListTile(
           leading: const Icon(Icons.speed_rounded),
           title: const Text('Monthly Limit', style: TextStyle(fontWeight: FontWeight.w500)),
-          trailing: Text('\$${_budgetLimit.toInt()}', style: const TextStyle(fontWeight: FontWeight.bold)),
+          trailing: Text('$symbol${convertedLimit.toInt()}', style: const TextStyle(fontWeight: FontWeight.bold)),
         ),
         Slider(
-          value: _budgetLimit,
+          value: widget.settingsManager.budgetLimit,
           min: 1000,
           max: 10000,
           divisions: 18,
-          onChanged: (val) => setState(() => _budgetLimit = val),
+          onChanged: (val) => widget.settingsManager.setBudgetLimit(val),
         ),
       ],
     );
@@ -229,25 +285,18 @@ class AccountPageState extends State<AccountPage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const SizedBox(height: 40),
-          Container(
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white, width: 3),
-              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10)],
-            ),
-            child: const CircleAvatar(
-              radius: 45.0,
-              backgroundColor: Colors.white,
-              child: Icon(Icons.person_rounded, size: 50, color: Colors.blueGrey),
-            ),
+          const SizedBox(height: 10),
+          const CircleAvatar(
+            radius: 35.0,
+            backgroundColor: Colors.white,
+            child: Icon(Icons.person_rounded, size: 40, color: Colors.blueGrey),
           ),
-          const SizedBox(height: 12.0),
+          const SizedBox(height: 8.0),
           Text(
             '${widget.user.firstName} ${widget.user.lastName}',
-            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
           ),
-          Text(widget.user.role, style: const TextStyle(color: Colors.white70)),
+          Text(widget.user.role, style: const TextStyle(color: Colors.white70, fontSize: 13)),
         ],
       ),
     );

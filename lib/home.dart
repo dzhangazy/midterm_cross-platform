@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'constants.dart';
-import 'components/components.dart';
 import 'models/models.dart';
 import 'models/settings_manager.dart';
 import 'screens/screens.dart';
@@ -47,6 +46,11 @@ class _HomeState extends ConsumerState<Home> {
       selectedIcon: Icon(Icons.receipt_long_rounded),
     ),
     NavigationDestination(
+      icon: Icon(Icons.chat_outlined),
+      label: 'Chat',
+      selectedIcon: Icon(Icons.chat_rounded),
+    ),
+    NavigationDestination(
       icon: Icon(Icons.account_circle_outlined),
       label: 'Profile',
       selectedIcon: Icon(Icons.account_circle_rounded),
@@ -55,18 +59,22 @@ class _HomeState extends ConsumerState<Home> {
 
   @override
   Widget build(BuildContext context) {
-    // 1. Наблюдаем за состоянием через Riverpod
+    // 1. Наблюдаем за состоянием
     // ignore: unused_local_variable
     final trackerState = ref.watch(tripRepositoryProvider);
 
-    // 2. Определяем страницы
+    // 2. Страницы
     final pages = [
       ExplorePage(
         cartManager: widget.cartManager,
         orderManager: widget.ordersManager,
         settingsManager: widget.settingsManager,
       ),
-      MyOrdersPage(orderManager: widget.ordersManager),
+      MyOrdersPage(
+        orderManager: widget.ordersManager,
+        settingsManager: widget.settingsManager,
+      ),
+      const ChatPage(),
       AccountPage(
         settingsManager: widget.settingsManager,
         onLogOut: (logout) async {
@@ -84,7 +92,6 @@ class _HomeState extends ConsumerState<Home> {
     ];
 
     return Scaffold(
-      // Убрали AppBar полностью, чтобы не было заголовка
       body: IndexedStack(index: widget.tab, children: pages),
       bottomNavigationBar: NavigationBar(
         elevation: 0,

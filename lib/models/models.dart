@@ -8,3 +8,4 @@ export 'user.dart';
 export 'expense.dart';
 export 'trip.dart';
 export 'tracker_state.dart';
+export 'chat_message.dart';

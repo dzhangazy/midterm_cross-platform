@@ -5,10 +5,10 @@ class SettingsManager extends ChangeNotifier {
   static const String _keyTabIndex = 'tab_index';
   static const String _keySearchHistory = 'search_history';
   static const String _keyCurrency = 'default_currency';
+  static const String _keyBudgetLimit = 'budget_limit';
 
   final SharedPreferences _prefs;
 
-  // Фиксированные курсы валют относительно USD
   final Map<String, double> _rates = {
     'USD': 1.0,
     'EUR': 0.92,
@@ -16,7 +16,6 @@ class SettingsManager extends ChangeNotifier {
     'GBP': 0.79,
   };
 
-  // Символы валют (экранируем $)
   final Map<String, String> _symbols = {
     'USD': '\$',
     'EUR': '€',
@@ -28,6 +27,18 @@ class SettingsManager extends ChangeNotifier {
     _tabIndex = _prefs.getInt(_keyTabIndex) ?? 0;
     _searchHistory = _prefs.getStringList(_keySearchHistory) ?? [];
     _defaultCurrency = _prefs.getString(_keyCurrency) ?? 'USD';
+    _budgetLimit = _prefs.getDouble(_keyBudgetLimit) ?? 5000.0;
+  }
+
+  // --- Budget Limit ---
+  double _budgetLimit = 5000.0;
+  double get budgetLimit => _budgetLimit;
+
+  void setBudgetLimit(double limit) {
+    if (_budgetLimit == limit) return;
+    _budgetLimit = limit;
+    _prefs.setDouble(_keyBudgetLimit, limit);
+    notifyListeners();
   }
 
   // --- Конвертация ---

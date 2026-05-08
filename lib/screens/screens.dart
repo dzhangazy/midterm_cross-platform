@@ -4,3 +4,7 @@ export 'login_page.dart';
 export 'myorders_page.dart';
 export 'account_page.dart';
 export 'restaurant_page.dart';
+export 'trip_detail_page.dart';
+export 'add_trip_page.dart';
+export 'expense_detail_page.dart';
+export 'chat_page.dart';

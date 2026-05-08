@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../components/components.dart';
 import '../models/models.dart';
-import '../constants.dart';
 
 class RestaurantSection extends StatelessWidget {
   final List<Restaurant> restaurants;
@@ -30,7 +29,6 @@ class RestaurantSection extends StatelessWidget {
             ),
           ),
           SizedBox(
-            // Увеличили высоту с 230 до 260, чтобы новый дизайн поместился
             height: 260,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
@@ -42,7 +40,8 @@ class RestaurantSection extends StatelessWidget {
                     child: RestaurantLandscapeCard(
                       restaurant: restaurants[index],
                       onTap: () {
-                        context.go('/${FinanceTripTab.dashboard.value}/trip/${restaurants[index].id}');
+                        // ИСПРАВЛЕНО: Маршрут теперь совпадает с main.dart
+                        context.push('/trip/${restaurants[index].id}');
                       },
                     ));
               },

@@ -4,27 +4,40 @@ part 'expense.g.dart';
 
 @JsonSerializable()
 class Expense {
-  final String id;
-  final String tripId;
+  final int? id;
+  final int? tripId;
   final String title;
   final double amount;
-  final String currency;
   final String category;
-  final DateTime date;
+  final DateTime? date;
 
   Expense({
-    required this.id,
-    required this.tripId,
+    this.id,
+    this.tripId,
     required this.title,
     required this.amount,
-    required this.currency,
-    required this.category,
-    required this.date,
+    this.category = 'Other',
+    this.date,
   });
 
-  /// Factory constructor for creating a new Expense instance from a map.
-  factory Expense.fromJson(Map<String, dynamic> json) => _$ExpenseFromJson(json);
+  Expense copyWith({
+    int? id,
+    int? tripId,
+    String? title,
+    double? amount,
+    String? category,
+    DateTime? date,
+  }) {
+    return Expense(
+      id: id ?? this.id,
+      tripId: tripId ?? this.tripId,
+      title: title ?? this.title,
+      amount: amount ?? this.amount,
+      category: category ?? this.category,
+      date: date ?? this.date,
+    );
+  }
 
-  /// Method to convert an Expense instance to a map.
+  factory Expense.fromJson(Map<String, dynamic> json) => _$ExpenseFromJson(json);
   Map<String, dynamic> toJson() => _$ExpenseToJson(this);
 }

@@ -29,12 +29,7 @@ class PostCard extends StatelessWidget {
           CircleAvatar(
             radius: 20,
             backgroundColor: colorScheme.primaryContainer,
-            backgroundImage: post.profileImageUrl.isNotEmpty 
-              ? AssetImage(post.profileImageUrl) 
-              : null,
-            child: post.profileImageUrl.isEmpty 
-              ? Icon(Icons.person, color: colorScheme.onPrimaryContainer, size: 20) 
-              : null,
+            child: Text(post.author[0], style: TextStyle(color: colorScheme.primary, fontSize: 14)),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -43,10 +38,14 @@ class PostCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
+                  post.author,
+                  style: textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold),
+                ),
+                Text(
                   post.comment,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
+                  style: textTheme.bodyMedium,
                 ),
                 const SizedBox(height: 4),
                 Text(

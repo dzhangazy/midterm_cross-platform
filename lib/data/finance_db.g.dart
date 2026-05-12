@@ -416,8 +416,22 @@ class $DbExpenseTable extends DbExpense
   late final GeneratedColumn<double> amount = GeneratedColumn<double>(
       'amount', aliasedName, false,
       type: DriftSqlType.double, requiredDuringInsert: true);
+  static const VerificationMeta _categoryMeta =
+      const VerificationMeta('category');
   @override
-  List<GeneratedColumn> get $columns => [id, tripId, title, amount];
+  late final GeneratedColumn<String> category = GeneratedColumn<String>(
+      'category', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant('Other'));
+  static const VerificationMeta _dateMeta = const VerificationMeta('date');
+  @override
+  late final GeneratedColumn<DateTime> date = GeneratedColumn<DateTime>(
+      'date', aliasedName, true,
+      type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, tripId, title, amount, category, date];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -449,6 +463,14 @@ class $DbExpenseTable extends DbExpense
     } else if (isInserting) {
       context.missing(_amountMeta);
     }
+    if (data.containsKey('category')) {
+      context.handle(_categoryMeta,
+          category.isAcceptableOrUnknown(data['category']!, _categoryMeta));
+    }
+    if (data.containsKey('date')) {
+      context.handle(
+          _dateMeta, date.isAcceptableOrUnknown(data['date']!, _dateMeta));
+    }
     return context;
   }
 
@@ -466,6 +488,10 @@ class $DbExpenseTable extends DbExpense
           .read(DriftSqlType.string, data['${effectivePrefix}title'])!,
       amount: attachedDatabase.typeMapping
           .read(DriftSqlType.double, data['${effectivePrefix}amount'])!,
+      category: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}category'])!,
+      date: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}date']),
     );
   }
 
@@ -480,11 +506,15 @@ class DbExpenseData extends DataClass implements Insertable<DbExpenseData> {
   final int tripId;
   final String title;
   final double amount;
+  final String category;
+  final DateTime? date;
   const DbExpenseData(
       {required this.id,
       required this.tripId,
       required this.title,
-      required this.amount});
+      required this.amount,
+      required this.category,
+      this.date});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -492,6 +522,10 @@ class DbExpenseData extends DataClass implements Insertable<DbExpenseData> {
     map['trip_id'] = Variable<int>(tripId);
     map['title'] = Variable<String>(title);
     map['amount'] = Variable<double>(amount);
+    map['category'] = Variable<String>(category);
+    if (!nullToAbsent || date != null) {
+      map['date'] = Variable<DateTime>(date);
+    }
     return map;
   }
 
@@ -501,6 +535,8 @@ class DbExpenseData extends DataClass implements Insertable<DbExpenseData> {
       tripId: Value(tripId),
       title: Value(title),
       amount: Value(amount),
+      category: Value(category),
+      date: date == null && nullToAbsent ? const Value.absent() : Value(date),
     );
   }
 
@@ -512,6 +548,8 @@ class DbExpenseData extends DataClass implements Insertable<DbExpenseData> {
       tripId: serializer.fromJson<int>(json['tripId']),
       title: serializer.fromJson<String>(json['title']),
       amount: serializer.fromJson<double>(json['amount']),
+      category: serializer.fromJson<String>(json['category']),
+      date: serializer.fromJson<DateTime?>(json['date']),
     );
   }
   @override
@@ -522,16 +560,25 @@ class DbExpenseData extends DataClass implements Insertable<DbExpenseData> {
       'tripId': serializer.toJson<int>(tripId),
       'title': serializer.toJson<String>(title),
       'amount': serializer.toJson<double>(amount),
+      'category': serializer.toJson<String>(category),
+      'date': serializer.toJson<DateTime?>(date),
     };
   }
 
   DbExpenseData copyWith(
-          {int? id, int? tripId, String? title, double? amount}) =>
+          {int? id,
+          int? tripId,
+          String? title,
+          double? amount,
+          String? category,
+          Value<DateTime?> date = const Value.absent()}) =>
       DbExpenseData(
         id: id ?? this.id,
         tripId: tripId ?? this.tripId,
         title: title ?? this.title,
         amount: amount ?? this.amount,
+        category: category ?? this.category,
+        date: date.present ? date.value : this.date,
       );
   DbExpenseData copyWithCompanion(DbExpenseCompanion data) {
     return DbExpenseData(
@@ -539,6 +586,8 @@ class DbExpenseData extends DataClass implements Insertable<DbExpenseData> {
       tripId: data.tripId.present ? data.tripId.value : this.tripId,
       title: data.title.present ? data.title.value : this.title,
       amount: data.amount.present ? data.amount.value : this.amount,
+      category: data.category.present ? data.category.value : this.category,
+      date: data.date.present ? data.date.value : this.date,
     );
   }
 
@@ -548,13 +597,15 @@ class DbExpenseData extends DataClass implements Insertable<DbExpenseData> {
           ..write('id: $id, ')
           ..write('tripId: $tripId, ')
           ..write('title: $title, ')
-          ..write('amount: $amount')
+          ..write('amount: $amount, ')
+          ..write('category: $category, ')
+          ..write('date: $date')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, tripId, title, amount);
+  int get hashCode => Object.hash(id, tripId, title, amount, category, date);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -562,7 +613,9 @@ class DbExpenseData extends DataClass implements Insertable<DbExpenseData> {
           other.id == this.id &&
           other.tripId == this.tripId &&
           other.title == this.title &&
-          other.amount == this.amount);
+          other.amount == this.amount &&
+          other.category == this.category &&
+          other.date == this.date);
 }
 
 class DbExpenseCompanion extends UpdateCompanion<DbExpenseData> {
@@ -570,17 +623,23 @@ class DbExpenseCompanion extends UpdateCompanion<DbExpenseData> {
   final Value<int> tripId;
   final Value<String> title;
   final Value<double> amount;
+  final Value<String> category;
+  final Value<DateTime?> date;
   const DbExpenseCompanion({
     this.id = const Value.absent(),
     this.tripId = const Value.absent(),
     this.title = const Value.absent(),
     this.amount = const Value.absent(),
+    this.category = const Value.absent(),
+    this.date = const Value.absent(),
   });
   DbExpenseCompanion.insert({
     this.id = const Value.absent(),
     required int tripId,
     required String title,
     required double amount,
+    this.category = const Value.absent(),
+    this.date = const Value.absent(),
   })  : tripId = Value(tripId),
         title = Value(title),
         amount = Value(amount);
@@ -589,12 +648,16 @@ class DbExpenseCompanion extends UpdateCompanion<DbExpenseData> {
     Expression<int>? tripId,
     Expression<String>? title,
     Expression<double>? amount,
+    Expression<String>? category,
+    Expression<DateTime>? date,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (tripId != null) 'trip_id': tripId,
       if (title != null) 'title': title,
       if (amount != null) 'amount': amount,
+      if (category != null) 'category': category,
+      if (date != null) 'date': date,
     });
   }
 
@@ -602,12 +665,16 @@ class DbExpenseCompanion extends UpdateCompanion<DbExpenseData> {
       {Value<int>? id,
       Value<int>? tripId,
       Value<String>? title,
-      Value<double>? amount}) {
+      Value<double>? amount,
+      Value<String>? category,
+      Value<DateTime?>? date}) {
     return DbExpenseCompanion(
       id: id ?? this.id,
       tripId: tripId ?? this.tripId,
       title: title ?? this.title,
       amount: amount ?? this.amount,
+      category: category ?? this.category,
+      date: date ?? this.date,
     );
   }
 
@@ -626,6 +693,12 @@ class DbExpenseCompanion extends UpdateCompanion<DbExpenseData> {
     if (amount.present) {
       map['amount'] = Variable<double>(amount.value);
     }
+    if (category.present) {
+      map['category'] = Variable<String>(category.value);
+    }
+    if (date.present) {
+      map['date'] = Variable<DateTime>(date.value);
+    }
     return map;
   }
 
@@ -635,7 +708,9 @@ class DbExpenseCompanion extends UpdateCompanion<DbExpenseData> {
           ..write('id: $id, ')
           ..write('tripId: $tripId, ')
           ..write('title: $title, ')
-          ..write('amount: $amount')
+          ..write('amount: $amount, ')
+          ..write('category: $category, ')
+          ..write('date: $date')
           ..write(')'))
         .toString();
   }
@@ -946,12 +1021,16 @@ typedef $$DbExpenseTableCreateCompanionBuilder = DbExpenseCompanion Function({
   required int tripId,
   required String title,
   required double amount,
+  Value<String> category,
+  Value<DateTime?> date,
 });
 typedef $$DbExpenseTableUpdateCompanionBuilder = DbExpenseCompanion Function({
   Value<int> id,
   Value<int> tripId,
   Value<String> title,
   Value<double> amount,
+  Value<String> category,
+  Value<DateTime?> date,
 });
 
 final class $$DbExpenseTableReferences
@@ -989,6 +1068,12 @@ class $$DbExpenseTableFilterComposer
 
   ColumnFilters<double> get amount => $composableBuilder(
       column: $table.amount, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get category => $composableBuilder(
+      column: $table.category, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get date => $composableBuilder(
+      column: $table.date, builder: (column) => ColumnFilters(column));
 
   $$DbTripTableFilterComposer get tripId {
     final $$DbTripTableFilterComposer composer = $composerBuilder(
@@ -1029,6 +1114,12 @@ class $$DbExpenseTableOrderingComposer
   ColumnOrderings<double> get amount => $composableBuilder(
       column: $table.amount, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get category => $composableBuilder(
+      column: $table.category, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get date => $composableBuilder(
+      column: $table.date, builder: (column) => ColumnOrderings(column));
+
   $$DbTripTableOrderingComposer get tripId {
     final $$DbTripTableOrderingComposer composer = $composerBuilder(
         composer: this,
@@ -1067,6 +1158,12 @@ class $$DbExpenseTableAnnotationComposer
 
   GeneratedColumn<double> get amount =>
       $composableBuilder(column: $table.amount, builder: (column) => column);
+
+  GeneratedColumn<String> get category =>
+      $composableBuilder(column: $table.category, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get date =>
+      $composableBuilder(column: $table.date, builder: (column) => column);
 
   $$DbTripTableAnnotationComposer get tripId {
     final $$DbTripTableAnnotationComposer composer = $composerBuilder(
@@ -1116,24 +1213,32 @@ class $$DbExpenseTableTableManager extends RootTableManager<
             Value<int> tripId = const Value.absent(),
             Value<String> title = const Value.absent(),
             Value<double> amount = const Value.absent(),
+            Value<String> category = const Value.absent(),
+            Value<DateTime?> date = const Value.absent(),
           }) =>
               DbExpenseCompanion(
             id: id,
             tripId: tripId,
             title: title,
             amount: amount,
+            category: category,
+            date: date,
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
             required int tripId,
             required String title,
             required double amount,
+            Value<String> category = const Value.absent(),
+            Value<DateTime?> date = const Value.absent(),
           }) =>
               DbExpenseCompanion.insert(
             id: id,
             tripId: tripId,
             title: title,
             amount: amount,
+            category: category,
+            date: date,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) => (

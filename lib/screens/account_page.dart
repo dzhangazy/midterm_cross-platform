@@ -31,7 +31,6 @@ class _AccountPageState extends ConsumerState<AccountPage> {
     final colorScheme = Theme.of(context).colorScheme;
     final trackerState = ref.watch(tripRepositoryProvider);
     
-    // Подсчет статистики с учетом конвертации
     final totalTrips = trackerState.trips.length;
     final totalPlannedUsd = trackerState.trips.fold(0.0, (sum, t) => sum + t.budget);
     final totalSpentUsd = trackerState.currentSpending;
@@ -100,7 +99,7 @@ class _AccountPageState extends ConsumerState<AccountPage> {
                           leading: const Icon(Icons.help_outline_rounded),
                           title: const Text('Travel Support'),
                           onTap: () async {
-                            await launchUrl(Uri.parse('https://jangazy-portfolio.netlify.app/'));
+                            await launchUrl(Uri.parse('https://flutter.dev'));
                           },
                         ),
                         ListTile(
@@ -293,7 +292,7 @@ class _AccountPageState extends ConsumerState<AccountPage> {
           ),
           const SizedBox(height: 8.0),
           Text(
-            '${widget.user.firstName} ${widget.user.lastName}',
+            widget.user.firstName,
             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
           ),
           Text(widget.user.role, style: const TextStyle(color: Colors.white70, fontSize: 13)),

@@ -5,6 +5,7 @@ import 'constants.dart';
 import 'models/models.dart';
 import 'models/settings_manager.dart';
 import 'screens/screens.dart';
+import 'screens/chat_inbox_page.dart';
 import 'repositories/trip_repository.dart';
 
 class Home extends ConsumerStatefulWidget {
@@ -74,19 +75,22 @@ class _HomeState extends ConsumerState<Home> {
         orderManager: widget.ordersManager,
         settingsManager: widget.settingsManager,
       ),
-      const ChatPage(),
+      const ChatInboxPage(), // Сменили на список контактов
       AccountPage(
         settingsManager: widget.settingsManager,
         onLogOut: (logout) async {
-          widget.auth.signOut().then((value) => context.go('/login'));
+          await widget.auth.signOut();
+          if (mounted) {
+            context.go('/login');
+          }
         },
         user: User(
-          firstName: 'Stef',
-          lastName: 'P',
+          firstName: widget.auth.currentUser?.email?.split('@')[0] ?? 'User',
+          lastName: '',
           role: 'Finance Planner',
           profileImageUrl: '',
           points: 100,
-          darkMode: true,
+          darkMode: Theme.of(context).brightness == Brightness.dark,
         ),
       ),
     ];

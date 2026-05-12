@@ -9,33 +9,31 @@ class PostSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Padding(
-            padding: EdgeInsets.only(left: 16.0, bottom: 8.0),
+            padding: EdgeInsets.only(left: 20.0, bottom: 12.0),
             child: Text(
               'Trip Feed',
               style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold),
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: -0.5),
             ),
           ),
           SizedBox(
-            height: 110.0,
+            height: 125.0, // Увеличено для предотвращения Bottom Overflow
             child: ListView.separated(
-              primary: false,
-              shrinkWrap: true,
+              padding: const EdgeInsets.symmetric(horizontal: 20),
               scrollDirection: Axis.horizontal,
               itemCount: posts.length,
               itemBuilder: (context, index) {
-                return SizedBox(
-                  width: 300.0,
-                  child: PostCard(post: posts[index]));
+                return PostCard(post: posts[index]);
               },
               separatorBuilder: (context, index) {
-                return const SizedBox(height: 16);
+                return const SizedBox(width: 4);
               },
             ),
           ),

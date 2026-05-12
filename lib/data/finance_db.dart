@@ -30,6 +30,7 @@ class DbExpense extends Table {
 @DriftDatabase(tables: [DbTrip, DbExpense], daos: [TripDao, ExpenseDao])
 class FinanceDatabase extends _$FinanceDatabase {
   FinanceDatabase() : super(_openConnection());
+  FinanceDatabase.executor(QueryExecutor e) : super(e);
 
   @override
   int get schemaVersion => 3;
@@ -38,12 +39,12 @@ class FinanceDatabase extends _$FinanceDatabase {
   MigrationStrategy get migration => MigrationStrategy(
         onUpgrade: (m, from, to) async {
           if (from < 2) {
-            await customStatement('ALTER TABLE db_trip ADD COLUMN start_date INTEGER');
-            await customStatement('ALTER TABLE db_trip ADD COLUMN end_date INTEGER');
+            await m.addColumn(dbTrip, dbTrip.startDate);
+            await m.addColumn(dbTrip, dbTrip.endDate);
           }
           if (from < 3) {
-            await customStatement('ALTER TABLE db_expense ADD COLUMN category TEXT DEFAULT "Other"');
-            await customStatement('ALTER TABLE db_expense ADD COLUMN date INTEGER');
+            await m.addColumn(dbExpense, dbExpense.category);
+            await m.addColumn(dbExpense, dbExpense.date);
           }
         },
         beforeOpen: (details) async {
@@ -55,8 +56,8 @@ class FinanceDatabase extends _$FinanceDatabase {
 @DriftAccessor(tables: [DbTrip])
 class TripDao extends DatabaseAccessor<FinanceDatabase> with _$TripDaoMixin {
   TripDao(super.db);
-  Future<List<Trip>> findAllTrips() => select(dbTrip).get().then((rows) => rows.map((t) => _mapDbTripToTrip(t)).toList());
-  Stream<List<Trip>> watchAllTrips() => select(dbTrip).watch().map((rows) => rows.map((t) => _mapDbTripToTrip(t)).toList());
+  Future<List<Trip>> findAllTrips() => select(dbTrip).get().then((rows) => rows.map((t) => mapDbTripToTrip(t)).toList());
+  Stream<List<Trip>> watchAllTrips() => select(dbTrip).watch().map((rows) => rows.map((t) => mapDbTripToTrip(t)).toList());
   Future<int> insertTrip(DbTripCompanion trip) => into(dbTrip).insertOnConflictUpdate(trip);
   Future deleteTrip(int id) => (delete(dbTrip)..where((t) => t.id.equals(id))).go();
 }
@@ -64,13 +65,15 @@ class TripDao extends DatabaseAccessor<FinanceDatabase> with _$TripDaoMixin {
 @DriftAccessor(tables: [DbExpense])
 class ExpenseDao extends DatabaseAccessor<FinanceDatabase> with _$ExpenseDaoMixin {
   ExpenseDao(super.db);
-  Future<List<Expense>> findAllExpenses() => select(dbExpense).get().then((rows) => rows.map((e) => _mapDbExpenseToExpense(e)).toList());
-  Stream<List<Expense>> watchAllExpenses() => select(dbExpense).watch().map((rows) => rows.map((e) => _mapDbExpenseToExpense(e)).toList());
+  Future<List<Expense>> findAllExpenses() => select(dbExpense).get().then((rows) => rows.map((e) => mapDbExpenseToExpense(e)).toList());
+  Stream<List<Expense>> watchAllExpenses() => select(dbExpense).watch().map((rows) => rows.map((e) => mapDbExpenseToExpense(e)).toList());
   Future<int> insertExpense(DbExpenseCompanion expense) => into(dbExpense).insertOnConflictUpdate(expense);
   Future deleteExpense(int id) => (delete(dbExpense)..where((e) => e.id.equals(id))).go();
+  
+  Future deleteExpensesForTrip(int tripId) => (delete(dbExpense)..where((e) => e.tripId.equals(tripId))).go();
 }
 
-Trip _mapDbTripToTrip(DbTripData data) => Trip(
+Trip mapDbTripToTrip(DbTripData data) => Trip(
     id: data.id,
     title: data.title,
     destination: data.destination,
@@ -92,28 +95,25 @@ DbTripCompanion mapTripToCompanion(Trip trip) {
   );
 }
 
-Expense _mapDbExpenseToExpense(dynamic data) {
-  String cat = 'Other';
-  DateTime? d;
-  try { cat = (data as dynamic).category; } catch(_) {}
-  try { d = (data as dynamic).date; } catch(_) {}
+Expense mapDbExpenseToExpense(DbExpenseData data) {
   return Expense(
-    id: (data as dynamic).id,
-    tripId: (data as dynamic).tripId,
-    title: (data as dynamic).title,
-    amount: (data as dynamic).amount,
-    category: cat,
-    date: d,
+    id: data.id,
+    tripId: data.tripId,
+    title: data.title,
+    amount: data.amount,
+    category: data.category,
+    date: data.date,
   );
 }
 
 DbExpenseCompanion mapExpenseToCompanion(Expense expense) {
-  // Исправлено: не передаем новые поля в конструктор, пока не запущен билд_раннер
   return DbExpenseCompanion(
     id: expense.id != null ? Value(expense.id!) : const Value.absent(),
     tripId: Value(expense.tripId ?? -1),
     title: Value(expense.title),
     amount: Value(expense.amount),
+    category: Value(expense.category),
+    date: Value(expense.date),
   );
 }
 

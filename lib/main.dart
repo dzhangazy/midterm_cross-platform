@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 import 'constants.dart';
 import 'screens/screens.dart';
 import 'models/models.dart';
@@ -14,6 +16,9 @@ import 'home.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   final prefs = await SharedPreferences.getInstance();
   usePathUrlStrategy();
   
@@ -63,13 +68,32 @@ class _FinanceTripAppState extends ConsumerState<FinanceTripApp> {
         GoRoute(
           path: '/login',
           builder: (context, state) => LoginPage(
-            onLogIn: (credentials) {
-              _auth.signIn(credentials.username, credentials.password);
-              context.go('/${_settingsManager.tabIndex}');
+            onLogIn: (credentials) async {
+              final errorMessage = await _auth.signIn(credentials.username, credentials.password);
+              if (errorMessage == null) {
+                if (mounted) context.go('/${_settingsManager.tabIndex}');
+              } else {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
+                  );
+                }
+              }
+            },
+            onRegister: (credentials) async {
+              final errorMessage = await _auth.register(credentials.username, credentials.password);
+              if (errorMessage == null) {
+                if (mounted) context.go('/${_settingsManager.tabIndex}');
+              } else {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
+                  );
+                }
+              }
             },
           ),
         ),
-        // TOP-LEVEL ROUTES FOR FULL SCREEN PAGES
         GoRoute(
           path: '/trip/:id',
           builder: (context, state) {
@@ -124,7 +148,6 @@ class _FinanceTripAppState extends ConsumerState<FinanceTripApp> {
           path: '/add-trip',
           builder: (context, state) => const AddTripPage(),
         ),
-        // TAB NAVIGATION
         GoRoute(
           path: '/:tab',
           builder: (context, state) {

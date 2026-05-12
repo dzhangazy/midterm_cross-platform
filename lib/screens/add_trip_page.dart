@@ -20,6 +20,7 @@ class _AddTripPageState extends ConsumerState<AddTripPage> {
   late TextEditingController _budgetController;
   DateTime? _startDate;
   DateTime? _endDate;
+  bool _isSaving = false;
 
   @override
   void initState() {
@@ -56,19 +57,36 @@ class _AddTripPageState extends ConsumerState<AddTripPage> {
     }
   }
 
-  void _saveTrip() {
+  Future<void> _saveTrip() async {
     if (_formKey.currentState!.validate()) {
-      final trip = (widget.tripToEdit ?? Trip(title: '', destination: '', budget: 0)).copyWith(
-        title: _titleController.text,
-        destination: _destController.text,
-        budget: double.tryParse(_budgetController.text) ?? 0,
-        startDate: _startDate,
-        endDate: _endDate,
-      );
+      setState(() => _isSaving = true);
+      try {
+        final trip = (widget.tripToEdit ?? Trip(title: '', destination: '', budget: 0)).copyWith(
+          title: _titleController.text,
+          destination: _destController.text,
+          budget: double.tryParse(_budgetController.text) ?? 0,
+          startDate: _startDate,
+          endDate: _endDate,
+        );
 
-      // Сохраняем в SQLite через наш репозиторий
-      ref.read(tripRepositoryProvider.notifier).insertTrip(trip);
-      Navigator.pop(context);
+        // Ждем сохранения в SQLite
+        await ref.read(tripRepositoryProvider.notifier).insertTrip(trip);
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Trip saved successfully!'), backgroundColor: Colors.green),
+          );
+          Navigator.pop(context);
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error saving trip: $e'), backgroundColor: Colors.red),
+          );
+        }
+      } finally {
+        if (mounted) setState(() => _isSaving = false);
+      }
     }
   }
 
@@ -89,9 +107,9 @@ class _AddTripPageState extends ConsumerState<AddTripPage> {
             children: [
               TextFormField(
                 controller: _titleController,
+                enabled: !_isSaving,
                 decoration: const InputDecoration(
                   labelText: 'Trip Title',
-                  hintText: 'e.g. Summer Vacation 2024',
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.title),
                 ),
@@ -100,9 +118,9 @@ class _AddTripPageState extends ConsumerState<AddTripPage> {
               const SizedBox(height: 20),
               TextFormField(
                 controller: _destController,
+                enabled: !_isSaving,
                 decoration: const InputDecoration(
                   labelText: 'Destination',
-                  hintText: 'Where are you going?',
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.map_outlined),
                 ),
@@ -111,11 +129,11 @@ class _AddTripPageState extends ConsumerState<AddTripPage> {
               const SizedBox(height: 20),
               TextFormField(
                 controller: _budgetController,
+                enabled: !_isSaving,
                 decoration: const InputDecoration(
                   labelText: 'Total Budget',
                   prefixText: '\$ ',
                   border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.attach_money),
                 ),
                 keyboardType: TextInputType.number,
                 validator: (val) => double.tryParse(val ?? '') == null ? 'Enter a valid number' : null,
@@ -127,18 +145,18 @@ class _AddTripPageState extends ConsumerState<AddTripPage> {
                 title: Text(_startDate == null 
                     ? 'Select Dates' 
                     : '${DateFormat('MMM d').format(_startDate!)} - ${DateFormat('MMM d, y').format(_endDate!)}'),
-                subtitle: const Text('Trip duration'),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () => _selectDateRange(context),
+                onTap: _isSaving ? null : () => _selectDateRange(context),
               ),
               const SizedBox(height: 40),
               ElevatedButton(
-                onPressed: _saveTrip,
+                onPressed: _isSaving ? null : _saveTrip,
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-                child: Text(isEditing ? 'Update Trip' : 'Create Trip', style: const TextStyle(fontSize: 18)),
+                child: _isSaving 
+                  ? const CircularProgressIndicator() 
+                  : Text(isEditing ? 'Update Trip' : 'Create Trip', style: const TextStyle(fontSize: 18)),
               ),
             ],
           ),

@@ -1,46 +1,52 @@
 class Post {
-  String id;
-  String profileImageUrl;
-  String comment;
-  String timestamp;
+  final String id;
+  final String author;
+  final String authorEmail;
+  final String profileImageUrl;
+  final String comment;
+  final String timestamp;
 
-  Post(
-    this.id,
-    this.profileImageUrl,
-    this.comment,
-    this.timestamp,
-  );
-
+  Post({
+    required this.id,
+    required this.author,
+    required this.authorEmail,
+    required this.profileImageUrl,
+    required this.comment,
+    required this.timestamp,
+  });
 }
 
 List<Post> posts = [
-  Post('1', '',
-      'Just booked my flights to Tokyo! Found a great deal.', '10'),
-  Post('2', '',
-      'Reached my savings goal for the year. Time for a vacation!', '80'),
-  Post('3', '',
-      'Exploring the Swiss Alps. The view is worth every penny.', '20'),
-  Post('4', '',
-      'Budgeted for the next 6 months. Feeling organized.', '30'),
   Post(
-      '5',
-      '',
-      '''Checking out some investment options for my retirement fund.''',
-      '40'),
+    id: '1',
+    author: 'Stef P.',
+    authorEmail: 'stef@yummy.com',
+    profileImageUrl: '',
+    comment: 'Just booked my flights to Tokyo! Found a great deal.',
+    timestamp: '10',
+  ),
   Post(
-      '6',
-      '',
-      '''Found a hidden gem in Paris. Best dinner of the trip!''',
-      '50'),
+    id: '2',
+    author: 'Kim A.',
+    authorEmail: 'kim@yummy.com',
+    profileImageUrl: '',
+    comment: 'Reached my savings goal for the year. Time for a vacation!',
+    timestamp: '80',
+  ),
   Post(
-      '7',
-      '',
-      '''Tracking all my expenses this week. Surprised by how much I spend on coffee!''',
-      '50'),
-  Post('8', '',
-      'Deciding between Italy or Spain for my next adventure.', '60'),
-  Post('9', '',
-      'New travel gear arrived. Ready for the next flight!', '70'),
-  Post('10', '',
-      'Hotel booked for the weekend getaway. Can\'t wait!', '90'),
+    id: '3',
+    author: 'Steve H.',
+    authorEmail: 'steve@yummy.com',
+    profileImageUrl: '',
+    comment: 'Exploring the Swiss Alps. The view is worth every penny.',
+    timestamp: '20',
+  ),
+  Post(
+    id: '4',
+    author: 'Emily L.',
+    authorEmail: 'emily@yummy.com',
+    profileImageUrl: '',
+    comment: 'Budgeted for the next 6 months. Feeling organized.',
+    timestamp: '30',
+  ),
 ];

@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'cart_manager.dart';
 
-class Order {
+class ActivityOrder {
   final Set<int> selectedSegment;
   final TimeOfDay? selectedTime;
   final DateTime? selectedDate;
   final String name;
   final List<CartItem> items;
 
-  Order({
+  ActivityOrder({
     required this.selectedSegment,
     required this.selectedTime,
     required this.selectedDate,
@@ -66,20 +66,20 @@ class Order {
 }
 
 class OrderManager extends ChangeNotifier {
-  final List<Order> _orders = [];
+  final List<ActivityOrder> _orders = [];
 
-  List<Order> get orders => List.unmodifiable(_orders);
+  List<ActivityOrder> get orders => List.unmodifiable(_orders);
 
   double get totalSpent {
     return _orders.fold(0.0, (sum, order) => sum + order.totalCost);
   }
 
-  void addOrder(Order order) {
+  void addOrder(ActivityOrder order) {
     _orders.add(order);
     notifyListeners();
   }
 
-  void removeOrder(Order order) {
+  void removeOrder(ActivityOrder order) {
     _orders.remove(order);
     notifyListeners();
   }

@@ -1,5 +1,5 @@
 name: yummy
-description: Finance Tracker & Trip Planner app.
+description: WanderWallet - Finance Tracker & Trip Planner app.
 
 publish_to: "none"
 
@@ -40,6 +40,7 @@ dev_dependencies:
   drift_dev: ^2.16.0
   mockito: ^5.4.4
   golden_toolkit: ^0.15.0
+  flutter_launcher_icons: ^0.13.1
 
 flutter:
   uses-material-design: true
@@ -50,3 +51,12 @@ flutter:
     - assets/trips/
     - assets/activities/
     - assets/finance/
+    - assets/branding/
+
+flutter_launcher_icons:
+  android: "ic_launcher"
+  ios: true
+  image_path: "assets/branding/logo.png"
+  web:
+    generate: true
+    image_path: "assets/branding/logo.png"

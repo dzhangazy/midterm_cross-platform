@@ -5,7 +5,7 @@ import '../models/models.dart';
 class CheckoutPage extends StatefulWidget {
   final CartManager cartManager;
   final Function() didUpdate;
-  final Function(Order) onSubmit;
+  final Function(ActivityOrder) onSubmit;
 
   const CheckoutPage(
       {super.key,
@@ -126,7 +126,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
               widget.cartManager.removeItem(item.id);
             });
             widget.didUpdate();
-            // SNACKBAR УБРАН
           },
           child: Container(
             padding: const EdgeInsets.all(16),
@@ -191,7 +190,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
         onPressed: widget.cartManager.isEmpty
             ? null
             : () {
-                final order = Order(
+                final order = ActivityOrder(
                     selectedSegment: selectedSegment,
                     selectedTime: selectedTime,
                     selectedDate: selectedDate,

@@ -181,6 +181,7 @@ class _FinanceTripAppState extends ConsumerState<FinanceTripApp> {
       listenable: _settingsManager,
       builder: (context, child) {
         return MaterialApp.router(
+          title: 'WanderWallet',
           debugShowCheckedModeBanner: false,
           routerConfig: _router,
           scrollBehavior: CustomScrollBehavior(),

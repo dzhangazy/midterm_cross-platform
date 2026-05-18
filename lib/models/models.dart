@@ -4,6 +4,7 @@ export 'food_category.dart';
 export 'order_manager.dart';
 export 'post.dart';
 export 'restaurant.dart';
+export 'review.dart';
 export 'user.dart';
 export 'expense.dart';
 export 'trip.dart';
